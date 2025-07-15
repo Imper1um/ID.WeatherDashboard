@@ -1,0 +1,76 @@
+﻿/*
+ * ID.WeatherDashboard: Designed to give you your weather from your personal weather station.
+    Copyright © 2025  Zachare Sylvestre (Imper1um)
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
+/* HTML styles for the splash screen */
+.avalonia-splash {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    background: white;
+    font-family: 'Outfit', sans-serif;
+    justify-content: center;
+    align-items: center;
+    display: flex;
+    pointer-events: none;
+}
+
+/* Light theme styles */
+@media (prefers-color-scheme: light) {
+    .avalonia-splash {
+        background: white;
+    }
+
+    .avalonia-splash h2 {
+        color: #1b2a4e;
+    }
+
+    .avalonia-splash a {
+        color: #0D6EFD;
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    .avalonia-splash {
+        background: #1b2a4e;
+    }
+
+    .avalonia-splash h2 {
+        color: white;
+    }
+
+    .avalonia-splash a {
+        color: white;
+    }
+}
+
+.avalonia-splash h2 {
+    font-weight: 400;
+    font-size: 1.5rem;
+}
+
+.avalonia-splash a {
+    text-decoration: none;
+    font-size: 2.5rem;
+    display: block;   
+}
+
+.avalonia-splash.splash-close {
+    transition: opacity 200ms, display 200ms;
+    display: none;
+    opacity: 0;
+}
