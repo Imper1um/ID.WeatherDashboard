@@ -554,7 +554,7 @@ namespace ID.WeatherDashboard.API.Services
                     );
                 var wc = t.ToDictionary(
                     sq => sq.Key,
-                    sq => sq.Value.WeatherConditions
+                    sq => (WeatherConditions)sq.Value.WeatherConditions!
                     );
 
                 SetElement(config, baseLine, t, nameof(DataLine.Pulled), (sl, b) => sl.Pulled = b, sl => sl.Pulled);
@@ -680,7 +680,7 @@ namespace ID.WeatherDashboard.API.Services
                     .Where(il => il.Value.MoonData != null)
                     .ToDictionary(
                         il => il.Key,
-                        il => il.Value.MoonData
+                        il => (MoonData)il.Value.MoonData!
                     );
                 SetElement(config, baseLine, individualLines, nameof(SunLine.AstronomicalTwilightBegin), (sl, b) => sl.AstronomicalTwilightBegin = b, sl => sl.AstronomicalTwilightBegin);
                 SetElement(config, baseLine, individualLines, nameof(SunLine.AstronomicalTwilightEnd), (sl, b) => sl.AstronomicalTwilightEnd = b, sl => sl.AstronomicalTwilightEnd);
@@ -694,14 +694,19 @@ namespace ID.WeatherDashboard.API.Services
                 SetElement(config, baseLine, individualLines, nameof(SunLine.DayEnd), (sl, b) => sl.DayEnd = b, sl => sl.DayEnd);
                 SetElement(config, baseLine, individualLines, nameof(SunLine.SolarNoon), (sl, b) => sl.SolarNoon = b, sl => sl.SolarNoon);
                 SetElement(config, baseLine, individualLines, nameof(SunLine.SunAzimuth), (sl, b) => sl.SunAzimuth = b, sl => sl.SunAzimuth);
-                SetElement(config, baseLine.MoonData, moonLines, $"{nameof(SunLine.MoonData)}.{nameof(MoonData.Latitude)}", (sl, b) => sl.Latitude = b, sl => sl?.Latitude);
-                SetElement(config, baseLine.MoonData, moonLines, $"{nameof(SunLine.MoonData)}.{nameof(MoonData.Longitude)}", (sl, b) => sl.Longitude = b, sl => sl?.Longitude);
-                SetElement(config, baseLine.MoonData, moonLines, $"{nameof(SunLine.MoonData)}.{nameof(MoonData.MoonDeclination)}", (sl, b) => sl.MoonDeclination = b, sl => sl?.MoonDeclination);
-                SetElement(config, baseLine.MoonData, moonLines, $"{nameof(SunLine.MoonData)}.{nameof(MoonData.MoonPhase)}", (sl, b) => sl.MoonPhase = b, sl => sl?.MoonPhase);
-                SetElement(config, baseLine.MoonData, moonLines, $"{nameof(SunLine.MoonData)}.{nameof(MoonData.MoonAzimuth)}", (sl, b) => sl.MoonAzimuth = b, sl => sl?.MoonAzimuth);
-                SetElement(config, baseLine.MoonData, moonLines, $"{nameof(SunLine.MoonData)}.{nameof(MoonData.MoonParallacticAngle)}", (sl, b) => sl.MoonParallacticAngle = b, sl => sl?.MoonParallacticAngle);
-                SetElement(config, baseLine.MoonData, moonLines, $"{nameof(SunLine.MoonData)}.{nameof(MoonData.MoonDistance)}", (sl, b) => sl.MoonDistance = b, sl => sl?.MoonDistance);
-                SetElement(config, baseLine.MoonData, moonLines, $"{nameof(SunLine.MoonData)}.{nameof(MoonData.MoonAltitude)}", (sl, b) => sl.MoonAltitude = b, sl => sl?.MoonAltitude);
+
+                var moonData = baseLine.MoonData ?? new MoonData(DateTimeOffset.Now);
+                baseLine.MoonData = moonData;
+                SetElement(config, moonData, moonLines, $"{nameof(SunLine.MoonData)}.{nameof(MoonData.Latitude)}", (sl, b) => sl.Latitude = b, sl => sl.Latitude);
+                SetElement(config, moonData, moonLines, $"{nameof(SunLine.MoonData)}.{nameof(MoonData.Longitude)}", (sl, b) => sl.Longitude = b, sl => sl.Longitude);
+                SetElement(config, moonData, moonLines, $"{nameof(SunLine.MoonData)}.{nameof(MoonData.MoonDeclination)}", (sl, b) => sl.MoonDeclination = b, sl => sl.MoonDeclination);
+                SetElement(config, moonData, moonLines, $"{nameof(SunLine.MoonData)}.{nameof(MoonData.MoonPhase)}", (sl, b) => sl.MoonPhase = b, sl => sl.MoonPhase);
+                SetElement(config, moonData, moonLines, $"{nameof(SunLine.MoonData)}.{nameof(MoonData.MoonAzimuth)}", (sl, b) => sl.MoonAzimuth = b, sl => sl.MoonAzimuth);
+                SetElement(config, moonData, moonLines, $"{nameof(SunLine.MoonData)}.{nameof(MoonData.MoonParallacticAngle)}", (sl, b) => sl.MoonParallacticAngle = b, sl => sl.MoonParallacticAngle);
+                SetElement(config, moonData, moonLines, $"{nameof(SunLine.MoonData)}.{nameof(MoonData.MoonDistance)}", (sl, b) => sl.MoonDistance = b, sl => sl.MoonDistance);
+                SetElement(config, moonData, moonLines, $"{nameof(SunLine.MoonData)}.{nameof(MoonData.MoonAltitude)}", (sl, b) => sl.MoonAltitude = b, sl => sl.MoonAltitude);
+
+                lines.Add(baseLine);
             }
 
             if (_sunDataCache.ContainsKey(location))
