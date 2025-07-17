@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ID.WeatherDashboard.API.Data
 {
-    public class ForecastData
+    public class ForecastData : IPulledData
     {
         public ForecastData(DateTimeOffset pulled, IEnumerable<ForecastDay>? lines = null)
         {
@@ -25,6 +25,8 @@ namespace ID.WeatherDashboard.API.Data
         public IEnumerable<ForecastDay> Days => _lines.ToList();
 
         public DateTimeOffset Pulled { get; set; }
+
+        public string[] Sources { get; set; } = Array.Empty<string>();
 
 
         /// <summary>

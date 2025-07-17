@@ -49,6 +49,20 @@ namespace ID.WeatherDashboard.WeatherAPI.Data
             return new DateTimeOffset(localDateTime, offset);
         }
 
+        public MoonData? ToMoonData()
+        {
+            if (Location == null || Astronomy?.Astro == null)
+                return null;
+            return new MoonData(Pulled, "WeatherAPI")
+            {
+                Moonrise = string.IsNullOrWhiteSpace(Astronomy.Astro.Moonrise) ? null : TimeFromAstronomy(Astronomy.Astro.Moonrise!),
+                Moonset = string.IsNullOrWhiteSpace(Astronomy.Astro.Moonset) ? null : TimeFromAstronomy(Astronomy.Astro.Moonset!),
+                MoonPhase = Astronomy.Astro.MoonPhase?.ToMoonPhase(),
+                For = For,
+                Latitude = Location.Latitude,
+            };
+        }
+
         public SunData? ToSunData()
         {
             if (Location == null || Astronomy?.Astro == null)
@@ -59,13 +73,13 @@ namespace ID.WeatherDashboard.WeatherAPI.Data
                 {
                     Sunrise = string.IsNullOrWhiteSpace(Astronomy.Astro.Sunrise) ? null : TimeFromAstronomy(Astronomy.Astro.Sunrise!),
                     Sunset = string.IsNullOrWhiteSpace(Astronomy.Astro.Sunset) ? null : TimeFromAstronomy(Astronomy.Astro.Sunset!),
-                    Moonrise = string.IsNullOrWhiteSpace(Astronomy.Astro.Moonrise) ? null : TimeFromAstronomy(Astronomy.Astro.Moonrise!),
-                    Moonset = string.IsNullOrWhiteSpace(Astronomy.Astro.Moonset) ? null : TimeFromAstronomy(Astronomy.Astro.Moonset!),
-                    MoonPhase = Astronomy.Astro.MoonPhase?.ToMoonPhase(),
+                    MoonData = ToMoonData(),
                     For = For,
                     Latitude = Location.Latitude,
                 })
-            ;
+            {
+                Sources = new[] { "WeatherAPI" }
+            };
         }
     }
 }

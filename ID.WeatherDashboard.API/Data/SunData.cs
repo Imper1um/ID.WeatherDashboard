@@ -6,13 +6,15 @@ using System.Threading.Tasks;
 
 namespace ID.WeatherDashboard.API.Data
 {
-    public class SunData
+    public class SunData : IPulledData
     {
         public SunData(DateTimeOffset? pulled, params SunLine[] lines)
         {
             Pulled = pulled ?? DateTimeOffset.Now;
             AddLines(lines);
         }
+
+        public string[] Sources { get; set; } = Array.Empty<string>();
 
         public DateTimeOffset Pulled { get; set; }
 

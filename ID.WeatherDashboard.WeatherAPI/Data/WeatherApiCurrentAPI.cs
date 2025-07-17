@@ -11,6 +11,8 @@ namespace ID.WeatherDashboard.WeatherAPI.Data
 {
     public class WeatherApiCurrentAPI
     {
+        public DateTimeOffset Pulled { get; set; } = DateTimeOffset.Now;
+
         [JsonPropertyName("location")]
         public WeatherApiLocation? Location { get; set; }
 
@@ -23,7 +25,7 @@ namespace ID.WeatherDashboard.WeatherAPI.Data
             {
                 return null;
             }
-            var pulled = DateTimeOffset.Now;
+            var pulled = Pulled;
             var currentData = new CurrentData(pulled, "WeatherAPI")
             {
                 Observed = Current?.LastUpdatedEpoch == null ? null : DateTimeOffset.FromUnixTimeSeconds(Current.LastUpdatedEpoch.Value),
@@ -51,6 +53,7 @@ namespace ID.WeatherDashboard.WeatherAPI.Data
                     IsSleet = Current?.Condition?.IsSleet,
                     IsRain = Current?.Condition?.IsRain,
                     StateConditions = Current?.Condition?.Text,
+                    Latitude = Location?.Latitude,
                 }
             };
             return currentData;

@@ -19,7 +19,10 @@ namespace ID.WeatherDashboard.WeatherAPI.Data
             {
                 return null;
             }
-            return new HistoryData(Forecast?.ForecastDays?.SelectMany(fd => fd.Hours?.Select(h => h.ToHistoryLine()) ?? new HistoryLine[0]).ToArray() ?? new HistoryLine[0]);
+            return new HistoryData(Pulled, Forecast?.ForecastDays?.SelectMany(fd => fd.Hours?.Select(h => h.ToHistoryLine()) ?? new HistoryLine[0]).ToArray() ?? new HistoryLine[0])
+            {
+                Sources = new[] {"WeatherApi"}
+            };
         }
     }
 }

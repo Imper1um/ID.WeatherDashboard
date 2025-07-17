@@ -31,8 +31,9 @@
         /// <param name="value">The <see cref="WindDirectionEnum"/> value.</param>
         /// <returns>The short name for the wind direction.</returns>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="value"/> is not a valid <see cref="WindDirectionEnum"/>.</exception>
-        public static string GetShortName(this WindDirectionEnum value)
+        public static string? GetShortName(this WindDirectionEnum? value)
         {
+            if (value == null) return null;
             return value switch
             {
                 WindDirectionEnum.North => "N",
@@ -61,8 +62,9 @@
         /// <param name="value">The <see cref="WindDirectionEnum"/> value.</param>
         /// <returns>The long name for the wind direction.</returns>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="value"/> is not a valid <see cref="WindDirectionEnum"/>.</exception>
-        public static string GetLongName(this WindDirectionEnum value)
+        public static string? GetLongName(this WindDirectionEnum? value)
         {
+            if (value == null) return null;
             return value switch
             {
                 WindDirectionEnum.North => "North",
@@ -91,8 +93,9 @@
         /// <param name="value">The <see cref="WindDirectionEnum"/> value.</param>
         /// <returns>A tuple containing the lower and upper degree bounds.</returns>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="value"/> is not a valid <see cref="WindDirectionEnum"/>.</exception>
-        public static (double Lower, double Upper) GetDegreeBounds(this WindDirectionEnum value)
+        public static (double Lower, double Upper)? GetDegreeBounds(this WindDirectionEnum? value)
         {
+            if (value == null) return null;
             return value switch
             {
                 WindDirectionEnum.North => (348.75, 11.25),
@@ -121,10 +124,11 @@
         /// <param name="degrees">Degrees from North (0-360).</param>
         /// <returns>The corresponding <see cref="WindDirectionEnum"/> value.</returns>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if the calculated index is not a valid <see cref="WindDirectionEnum"/>.</exception>
-        public static WindDirectionEnum ToWindDirection(this double degrees)
+        public static WindDirectionEnum? ToWindDirection(this double? degrees)
         {
+            if (degrees == null) return null;
             degrees = (degrees % 360 + 360) % 360;
-            int index = (int)Math.Round(degrees / 22.5) % 16;
+            int index = (int)Math.Round(degrees.Value / 22.5) % 16;
             return index switch
             {
                 0 => WindDirectionEnum.North,

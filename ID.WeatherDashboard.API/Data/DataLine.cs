@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ID.WeatherDashboard.API.Data
 {
-    public abstract class DataLine
+    public abstract class DataLine: IPulledData
     {
         protected DataLine(DateTimeOffset pulled, params string[] sources)
         {
@@ -27,6 +27,6 @@ namespace ID.WeatherDashboard.API.Data
         public float? UVIndex { get; set; }
         public Pressure? Pressure { get; set; }
         public Coordinates? Coordinates { get; set; }
-        public WeatherConditions? WeatherConditions { get; set; }
+        public WeatherConditions? WeatherConditions { get; set; } = new WeatherConditions(DateTimeOffset.Now);
     }
 }

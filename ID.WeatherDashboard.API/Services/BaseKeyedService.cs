@@ -7,9 +7,8 @@ using System.Threading.Tasks;
 
 namespace ID.WeatherDashboard.API.Services
 {
-    public interface IQueryService
+    public abstract class BaseKeyedService<T> : BaseService<T> where T : KeyedServiceConfig
     {
-        string ServiceName { get; }
-        void SetServiceConfig(ServiceConfig config);
+        public virtual string ApiKey => Config?.ApiKey ?? string.Empty;
     }
 }

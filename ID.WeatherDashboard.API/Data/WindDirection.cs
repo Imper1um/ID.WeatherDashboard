@@ -17,7 +17,7 @@ namespace ID.WeatherDashboard.API.Data
         /// Initializes a new instance of the <see cref="WindDirection"/> class with the specified direction in degrees.
         /// </summary>
         /// <param name="direction">The wind direction in degrees from North (0-360).</param>
-        public WindDirection(int direction)
+        public WindDirection(double? direction)
         {
             Direction = direction;
         }
@@ -26,11 +26,11 @@ namespace ID.WeatherDashboard.API.Data
         /// Gets or sets the wind direction in degrees from North (0-360).
         /// </summary>
         [Range(0f, 360f)]
-        public double Direction { get; set; }
+        public double? Direction { get; set; }
 
         /// <summary>
         /// Gets the wind direction as a <see cref="WindDirectionEnum"/> value.
         /// </summary>
-        public WindDirectionEnum DirectionEnum => Direction.ToWindDirection();
+        public WindDirectionEnum? DirectionEnum => Direction.ToWindDirection();
     }
 }

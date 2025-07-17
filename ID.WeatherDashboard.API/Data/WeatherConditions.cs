@@ -22,6 +22,11 @@ namespace ID.WeatherDashboard.API.Data
         public DateTimeOffset Time { get; set; }
 
         /// <summary>
+        /// Gets or sets the base precipitation rate (used when its not known if its raining or snowing).
+        /// </summary>
+        public Precipitation? BasePrecipitationRate { get; set; }
+
+        /// <summary>
         /// Gets or sets the rain rate
         /// </summary>
         public Precipitation? RainRate { get; set; }
@@ -32,9 +37,9 @@ namespace ID.WeatherDashboard.API.Data
         public Precipitation? SnowRate { get; set; }
 
         /// <summary>
-        /// Gets or sets the cloud cover percentage (0-100).
+        /// Gets or sets the cloud cover percentage (0.0-1.0).
         /// </summary>
-        public double? CloudCoverPercentage { get; set; }
+        public float? CloudCoverPercentage { get; set; }
 
         /// <summary>
         /// Gets or sets the moon phase.
@@ -59,12 +64,12 @@ namespace ID.WeatherDashboard.API.Data
         /// <summary>
         /// Gets or sets the sun angle in degrees above the horizon.
         /// </summary>
-        public double? SunAngle { get; set; }
+        public float? SunAngle { get; set; }
 
         /// <summary>
         /// Gets or sets the moon angle in degrees above the horizon.
         /// </summary>
-        public double? MoonAngle { get; set; }
+        public float? MoonAngle { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether lightning is present.
@@ -116,6 +121,8 @@ namespace ID.WeatherDashboard.API.Data
         /// </summary>
         public string? StateConditions { get; set; }
 
+        public double? Latitude { get; set; }
+
         /// <summary>
         /// Creates a deep copy of this <see cref="WeatherConditions"/> instance.
         /// </summary>
@@ -140,7 +147,8 @@ namespace ID.WeatherDashboard.API.Data
                 IsWarning = IsWarning,
                 IsHurricane = IsHurricane,
                 IsTornado = IsTornado,
-                StateConditions = StateConditions
+                StateConditions = StateConditions,
+                Latitude = Latitude
             };
         }
     }
