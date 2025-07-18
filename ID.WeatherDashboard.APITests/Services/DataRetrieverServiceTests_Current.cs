@@ -513,7 +513,9 @@ namespace ID.WeatherDashboard.APITests.Services
             var dr = GetDataRetriever();
             var l = new Location("TestLocation");
             await dr.GetCurrentDataAsync(l);
-            Assert.AreEqual(1, historyData.Lines.Count());
+            var stored = await dr.GetHistoryDataAsync(l);
+            Assert.IsNotNull(stored);
+            Assert.AreEqual(1, stored!.Lines.Count());
         }
 
         [TestMethod]

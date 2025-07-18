@@ -151,6 +151,7 @@ namespace ID.WeatherDashboard.API.Services
             }
 
             var currentData = config.OverlayExistingData ? (data ?? new CurrentData(DateTimeOffset.Now)) : new CurrentData(DateTimeOffset.Now);
+            currentData.Pulled = DateTimeOffset.Now;
             currentData.Observed = serviceQueries.Max(sq => sq.Value.Observed ?? DateTimeOffset.MinValue);
             currentData.Sources = serviceQueries.Select(sq => sq.Value.Sources).SelectMany(s => s).Union(currentData.Sources).Distinct().ToArray();
 
@@ -184,6 +185,7 @@ namespace ID.WeatherDashboard.API.Services
             SetElement(config, currentData, serviceQueries, "WeatherConditions.IsHurricane", (c, i) => c.WeatherConditions!.IsHurricane = i, c => c.WeatherConditions?.IsHurricane);
             SetElement(config, currentData, serviceQueries, "WeatherConditions.IsTornado", (c, i) => c.WeatherConditions!.IsTornado = i, c => c.WeatherConditions?.IsTornado);
             SetElement(config, currentData, serviceQueries, "WeatherConditions.StateConditions", (c, i) => c.WeatherConditions!.StateConditions = i, c => c.WeatherConditions?.StateConditions);
+            SetElement(config, currentData, serviceQueries, "WeatherConditions.Latitude", (c, i) => c.WeatherConditions!.Latitude = i, c => c.WeatherConditions?.Latitude);
 
             //Now fill with SunData and AlertData
             var sunData = await GetSunDataAsync(location);
