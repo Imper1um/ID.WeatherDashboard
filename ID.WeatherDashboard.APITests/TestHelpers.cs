@@ -48,6 +48,11 @@
             return (int)(minValue + (Random.Shared.NextDouble() * (maxValue - minValue)));
         }
 
+        public static float RandomFloatBetween(float minValue, double maxValue)
+        {
+            return (float)(minValue + (Random.Shared.NextDouble() * (maxValue - minValue)));
+        }
+
         public static DateTimeOffset RandomDateTimeOffsetBetween(DateTimeOffset minValue, DateTimeOffset maxValue)
         {
             var ticksBetween = (maxValue - minValue).Ticks;

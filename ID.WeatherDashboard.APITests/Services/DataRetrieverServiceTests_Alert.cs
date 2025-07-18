@@ -1,19 +1,10 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using ID.WeatherDashboard.API.Services;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using ID.WeatherDashboard.API.Services;
 using Moq;
-using ID.WeatherDashboard.API.Config;
 using ID.WeatherDashboard.API.Data;
 using ID.WeatherDashboard.API.Codes;
-using ID.WeatherDashboard.APITests;
 using System.Text.Json;
-using ID.WeatherDashboard.APITests.Services;
 
-namespace ID.WeatherDashboard.API.Services.Tests
+namespace ID.WeatherDashboard.APITests.Services
 {
     [TestClass]
     public class DataRetrieverServiceTests_Alert : DataRetrieverServiceTests

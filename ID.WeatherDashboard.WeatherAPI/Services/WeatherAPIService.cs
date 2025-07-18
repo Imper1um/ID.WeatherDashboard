@@ -115,5 +115,10 @@ namespace ID.WeatherDashboard.WeatherAPI.Services
             }
             return new SunData(DateTimeOffset.Now, sunDatas.SelectMany(sd => sd.Lines).ToArray());
         }
+
+        public Task<SunData?> GetSunDataAsync(Location location, DateTimeOffset from, DateTimeOffset to)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
