@@ -13,7 +13,7 @@ namespace ID.WeatherDashboard.MoonPhase.Services
 
         protected override string BaseServiceName => _ServiceName;
 
-        public async Task<SunData?> GetSunDataAsync(Location location, DateTime from, DateTime to)
+        public async Task<SunData?> GetSunDataAsync(Location location, DateTimeOffset from, DateTimeOffset to)
         {
             var lat = location.Latitude?.ToString("F3", System.Globalization.CultureInfo.InvariantCulture);
             var lon = location.Longitude?.ToString("F3", System.Globalization.CultureInfo.InvariantCulture);
@@ -34,7 +34,7 @@ namespace ID.WeatherDashboard.MoonPhase.Services
                 {
                     var content = await response.Content.ReadAsStreamAsync();
                     var apiData = await JsonSerializer.DeserializeAsync<MoonPhaseAdvancedAPI>(content);
-                    var sunData = apiData?.ToSunData(d);
+                    var sunData = apiData?.ToSunData(d.Date);
                     if (sunData != null)
                     {
                         sunDatas.Add(sunData);
