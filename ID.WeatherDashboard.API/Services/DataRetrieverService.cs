@@ -83,15 +83,15 @@ namespace ID.WeatherDashboard.API.Services
                 switch (dataConfig.RefreshEvent)
                 {
                     case "NextHour":
-                        var maxHourAge = new DateTimeOffset(pulled.Year, pulled.Month, pulled.Day, pulled.Hour + 1, 0, 0, pulled.Offset);
-                        if (pulled < maxHourAge)
+                        var nextHour = new DateTimeOffset(pulled.Year, pulled.Month, pulled.Day, pulled.Hour, 0, 0, pulled.Offset).AddHours(1);
+                        if (DateTimeOffset.Now >= nextHour)
                         {
                             return false;
                         }
                         break;
                     case "NextDay":
-                        var maxDayAge = new DateTimeOffset(pulled.Year, pulled.Month, pulled.Day + 1, 0, 0, 0, pulled.Offset);
-                        if (pulled < maxDayAge)
+                        var nextDay = new DateTimeOffset(pulled.Year, pulled.Month, pulled.Day, 0, 0, 0, pulled.Offset).AddDays(1);
+                        if (DateTimeOffset.Now >= nextDay)
                         {
                             return false;
                         }
