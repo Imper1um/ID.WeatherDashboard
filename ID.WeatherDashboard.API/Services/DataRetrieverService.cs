@@ -595,6 +595,7 @@ namespace ID.WeatherDashboard.API.Services
                 SetElement(config, cond, wc, $"{nameof(DataLine.WeatherConditions)}.{nameof(WeatherConditions.IsTornado)}", (sl, b) => sl.IsTornado = b, sl => sl?.IsTornado);
                 SetElement(config, cond, wc, $"{nameof(DataLine.WeatherConditions)}.{nameof(WeatherConditions.StateConditions)}", (sl, b) => sl.StateConditions = b, sl => sl?.StateConditions);
                 SetElement(config, cond, wc, $"{nameof(DataLine.WeatherConditions)}.{nameof(WeatherConditions.Latitude)}", (sl, b) => sl.Latitude = b, sl => sl?.Latitude);
+                historyData.AddLine(baseLine);
 
                 lines.Add(baseLine);
             }
