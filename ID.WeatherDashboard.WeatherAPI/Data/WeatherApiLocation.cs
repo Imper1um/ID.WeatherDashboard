@@ -35,4 +35,5 @@ namespace ID.WeatherDashboard.WeatherAPI.Data
             }
             throw new InvalidOperationException("Latitude and Longitude must be set to convert to Coordinates.");
         }
+    }
 }

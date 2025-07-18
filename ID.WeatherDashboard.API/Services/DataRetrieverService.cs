@@ -125,7 +125,8 @@ namespace ID.WeatherDashboard.API.Services
                 return data;
 
             var servicesToQuery = config.Elements
-                .Select(element => element.Name)
+                .SelectMany(element => element.ServiceElements)
+                .Select(se => se.ServiceName)
                 .Distinct();
             var serviceQueries = new Dictionary<string, CurrentData>();
             if (!servicesToQuery.Any())
@@ -273,7 +274,8 @@ namespace ID.WeatherDashboard.API.Services
                 return data;
 
             var servicesToQuery = config.Elements
-                .Select(e => e.Name)
+                .SelectMany(element => element.ServiceElements)
+                .Select(se => se.ServiceName)
                 .Distinct();
             var serviceQueries = new Dictionary<string, ForecastData>();
             if (!servicesToQuery.Any())
@@ -492,7 +494,8 @@ namespace ID.WeatherDashboard.API.Services
                 return data;
 
             var servicesToQuery = config.Elements
-                .Select(element => element.Name)
+                .SelectMany(element => element.ServiceElements)
+                .Select(se => se.ServiceName)
                 .Distinct();
             var serviceQueries = new Dictionary<string, HistoryData>();
             if (!servicesToQuery.Any())
@@ -615,7 +618,8 @@ namespace ID.WeatherDashboard.API.Services
                 return data;
 
             var servicesToQuery = config.Elements
-                .Select(element => element.Name)
+                .SelectMany(element => element.ServiceElements)
+                .Select(se => se.ServiceName)
                 .Distinct();
             var serviceQueries = new Dictionary<string, SunData>();
             if (!servicesToQuery.Any())
@@ -669,7 +673,12 @@ namespace ID.WeatherDashboard.API.Services
             foreach (var d in datesToHave)
             {
                 var baseLine = sunData.Lines.FirstOrDefault(l => l.For.Date == d.Date);
-                if (baseLine == null) baseLine = new SunLine(DateTimeOffset.Now) { For = d.Date, MoonData= new MoonData(DateTimeOffset.Now) { For = d.Date } };
+                bool isNew = false;
+                if (baseLine == null)
+                {
+                    baseLine = new SunLine(DateTimeOffset.Now) { For = d.Date, MoonData = new MoonData(DateTimeOffset.Now) { For = d.Date } };
+                    isNew = true;
+                }
                 var individualLines = serviceQueries
                     .Where(sq => sq.Value.Lines.Any(l => l.For.Date == d.Date))
                     .ToDictionary(
@@ -682,6 +691,8 @@ namespace ID.WeatherDashboard.API.Services
                         il => il.Key,
                         il => (MoonData)il.Value.MoonData!
                     );
+                if (isNew && !individualLines.Any()) continue;
+
                 SetElement(config, baseLine, individualLines, nameof(SunLine.AstronomicalTwilightBegin), (sl, b) => sl.AstronomicalTwilightBegin = b, sl => sl.AstronomicalTwilightBegin);
                 SetElement(config, baseLine, individualLines, nameof(SunLine.AstronomicalTwilightEnd), (sl, b) => sl.AstronomicalTwilightEnd = b, sl => sl.AstronomicalTwilightEnd);
                 SetElement(config, baseLine, individualLines, nameof(SunLine.CivilTwilightBegin), (sl, b) => sl.CivilTwilightBegin = b, sl => sl.CivilTwilightBegin);
@@ -708,6 +719,8 @@ namespace ID.WeatherDashboard.API.Services
 
                 lines.Add(baseLine);
             }
+            sunData.Clear();
+            sunData.AddLines(lines);
 
             if (_sunDataCache.ContainsKey(location))
             {
@@ -729,7 +742,8 @@ namespace ID.WeatherDashboard.API.Services
                 return data;
 
             var servicesToQuery = config.Elements
-                .Select(element => element.Name)
+                .SelectMany(element => element.ServiceElements)
+                .Select(se => se.ServiceName)
                 .Distinct();
             var serviceQueries = new Dictionary<string, AlertData>();
             if (!servicesToQuery.Any())
@@ -738,6 +752,7 @@ namespace ID.WeatherDashboard.API.Services
             }
 
             var alertData = config.OverlayExistingData ? (data ?? new AlertData(DateTimeOffset.Now)) : new AlertData(DateTimeOffset.Now);
+            alertData.Pulled = DateTimeOffset.Now;
             foreach (var s in servicesToQuery)
             {
                 var service = AlertQueryServices.FirstOrDefault(q => string.Equals(q.ServiceName, s, StringComparison.OrdinalIgnoreCase));
@@ -779,19 +794,32 @@ namespace ID.WeatherDashboard.API.Services
 
         private DateTimeOffset GetWeightedAverage(IEnumerable<Tuple<int, DateTimeOffset>> tuples)
         {
-            long weightedTicks = 0;
+            var minDate = tuples.Min(t => t.Item2.UtcDateTime);
+            double weightedTicks = 0;
             int totalWeight = 0;
 
             foreach (var t in tuples)
             {
-                weightedTicks += t.Item1 * t.Item2.Ticks;
+                var deltaTicks = (t.Item2.UtcDateTime - minDate).Ticks;
+                weightedTicks += t.Item1 * deltaTicks;
                 totalWeight += t.Item1;
             }
 
-            return totalWeight > 0
-                ? new DateTimeOffset(weightedTicks / totalWeight, TimeSpan.Zero)
-                : DateTimeOffset.MinValue;
+            if (totalWeight > 0)
+            {
+                var avgDeltaTicks = weightedTicks / totalWeight;
+                var result = minDate.AddTicks((long)avgDeltaTicks);
+                return new DateTimeOffset(result.Ticks, TimeSpan.Zero);
+            }
+
+            return DateTimeOffset.MinValue;
         }
+
+
+
+
+
+
 
         private float GetWeightedAverage(IEnumerable<Tuple<int, float>> tuples)
         {

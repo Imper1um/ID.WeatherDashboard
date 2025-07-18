@@ -45,5 +45,10 @@ namespace ID.WeatherDashboard.API.Data
         {
             _lines.RemoveAll(l => l.For < date);
         }
+
+        public void Clear()
+        {
+            _lines.Clear();
+        }
     }
 }

@@ -9,6 +9,6 @@ namespace ID.WeatherDashboard.API.Services
 {
     public interface ISunDataService : IQueryService
     {
-        Task<SunData?> GetSunDataAsync(Location location, DateTime from, DateTime to);
+        Task<SunData?> GetSunDataAsync(Location location, DateTimeOffset from, DateTimeOffset to);
     }
 }

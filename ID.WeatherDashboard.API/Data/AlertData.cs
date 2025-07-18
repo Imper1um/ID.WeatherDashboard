@@ -28,11 +28,7 @@ namespace ID.WeatherDashboard.API.Data
         {
             if (alerts == null) throw new ArgumentNullException(nameof(alerts));
             _alerts.Clear();
-            _alerts.AddRange(alerts.Where(a => a.MessageType == AlertMessageTypeEnum.Alert));
-            foreach (var alert in alerts.Where(a => a.MessageType == AlertMessageTypeEnum.Update))
-                AddLine(alert);
-            foreach (var alert in alerts.Where(a => a.MessageType == AlertMessageTypeEnum.Cancel))
-                AddLine(alert);
+            _alerts.AddRange(alerts);
         }
 
         public void AddLine(Alert alert)
@@ -47,6 +43,7 @@ namespace ID.WeatherDashboard.API.Data
             switch (alert.MessageType)
             {
                 case AlertMessageTypeEnum.Update:
+                case AlertMessageTypeEnum.Alert:
                     var alertsToUpdate = _alerts.Where(IsMatch);
                     if (alertsToUpdate.Any()) 
                     {

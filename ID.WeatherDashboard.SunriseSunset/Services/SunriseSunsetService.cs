@@ -20,7 +20,7 @@ namespace ID.WeatherDashboard.SunriseSunset.Services
         public const string _serviceUrl = "https://api.sunrise-sunset.org/json";
         public SunriseSunsetApiConfig? Config { get; set; }
 
-        public async Task<SunData?> GetSunDataAsync(Location location, DateTime from, DateTime to)
+        public async Task<SunData?> GetSunDataAsync(Location location, DateTimeOffset from, DateTimeOffset to)
         {
             var sunLines = new List<SunLine>();
             for (var dt = from.Date; dt <= to.Date; dt = dt.AddDays(1))
