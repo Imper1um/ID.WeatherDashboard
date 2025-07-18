@@ -801,13 +801,13 @@ namespace ID.WeatherDashboard.API.Services
 
         private DateTimeOffset GetWeightedAverage(IEnumerable<Tuple<int, DateTimeOffset>> tuples)
         {
-            var minDate = tuples.Min(t => t.Item2.UtcDateTime);
+            var minDate = tuples.Min(t => t.Item2);
             double weightedTicks = 0;
             int totalWeight = 0;
 
             foreach (var t in tuples)
             {
-                var deltaTicks = (t.Item2.UtcDateTime - minDate).Ticks;
+                var deltaTicks = (t.Item2.UtcDateTime - minDate.UtcDateTime).Ticks;
                 weightedTicks += t.Item1 * deltaTicks;
                 totalWeight += t.Item1;
             }
@@ -815,8 +815,8 @@ namespace ID.WeatherDashboard.API.Services
             if (totalWeight > 0)
             {
                 var avgDeltaTicks = weightedTicks / totalWeight;
-                var result = minDate.AddTicks((long)avgDeltaTicks);
-                return new DateTimeOffset(result.Ticks, TimeSpan.Zero);
+                var result = minDate.UtcDateTime.AddTicks((long)avgDeltaTicks);
+                return new DateTimeOffset(result.Ticks, minDate.Offset);
             }
 
             return DateTimeOffset.MinValue;
