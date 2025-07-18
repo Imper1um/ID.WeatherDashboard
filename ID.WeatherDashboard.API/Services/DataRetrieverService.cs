@@ -353,6 +353,7 @@ namespace ID.WeatherDashboard.API.Services
                     );
 
                 SetElement(config, baseLine, matchingServiceLines, nameof(DataLine.Pulled), (l, b) => l.Pulled = b, l => l.Pulled);
+                SetElement(config, baseLine, matchingServiceLines, nameof(DataLine.Observed), (l, b) => l.Observed = b, l => l.Observed);
                 SetElement(config, baseLine, matchingServiceLines, nameof(DataLine.StationId), (l, b) => l.StationId = b, l => l.StationId);
                 SetElement(config, baseLine, matchingServiceLines, nameof(DataLine.WindDirection), (l, b) => l.WindDirection = b, l => l.WindDirection);
                 SetElement(config, baseLine, matchingServiceLines, nameof(DataLine.Humidity), (l, b) => l.Humidity = b, l => l.Humidity);
@@ -363,6 +364,8 @@ namespace ID.WeatherDashboard.API.Services
                 SetElement(config, baseLine, matchingServiceLines, nameof(DataLine.UVIndex), (l, b) => l.UVIndex = b, l => l.UVIndex);
                 SetElement(config, baseLine, matchingServiceLines, nameof(DataLine.Pressure), (l, b) => l.Pressure = b, l => l.Pressure);
                 SetElement(config, baseLine, matchingServiceLines, nameof(DataLine.Coordinates), (l, b) => l.Coordinates = b, l => l.Coordinates);
+                SetElement(config, baseLine, matchingServiceLines, nameof(ForecastLine.RainChance), (l, b) => l.RainChance = b, l => l.RainChance);
+                SetElement(config, baseLine, matchingServiceLines, nameof(ForecastLine.SnowChance), (l, b) => l.SnowChance = b, l => l.SnowChance);
 
                 var cond = baseLine.WeatherConditions ?? new WeatherConditions(baseLine.Observed);
                 baseLine.WeatherConditions = cond;
@@ -423,6 +426,7 @@ namespace ID.WeatherDashboard.API.Services
                     );
 
                 SetElement(config, baseLine, matchingServiceLines, nameof(DataLine.Pulled), (l, b) => l.Pulled = b, l => l.Pulled);
+                SetElement(config, baseLine, matchingServiceLines, nameof(DataLine.Observed), (l, b) => l.Observed = b, l => l.Observed);
                 SetElement(config, baseLine, matchingServiceLines, nameof(DataLine.StationId), (l, b) => l.StationId = b, l => l.StationId);
                 SetElement(config, baseLine, matchingServiceLines, nameof(DataLine.WindDirection), (l, b) => l.WindDirection = b, l => l.WindDirection);
                 SetElement(config, baseLine, matchingServiceLines, nameof(DataLine.Humidity), (l, b) => l.Humidity = b, l => l.Humidity);
@@ -433,6 +437,8 @@ namespace ID.WeatherDashboard.API.Services
                 SetElement(config, baseLine, matchingServiceLines, nameof(DataLine.UVIndex), (l, b) => l.UVIndex = b, l => l.UVIndex);
                 SetElement(config, baseLine, matchingServiceLines, nameof(DataLine.Pressure), (l, b) => l.Pressure = b, l => l.Pressure);
                 SetElement(config, baseLine, matchingServiceLines, nameof(DataLine.Coordinates), (l, b) => l.Coordinates = b, l => l.Coordinates);
+                SetElement(config, baseLine, matchingServiceLines, nameof(ForecastLine.RainChance), (l, b) => l.RainChance = b, l => l.RainChance);
+                SetElement(config, baseLine, matchingServiceLines, nameof(ForecastLine.SnowChance), (l, b) => l.SnowChance = b, l => l.SnowChance);
 
                 var cond = baseLine.WeatherConditions ?? new WeatherConditions(baseLine.Observed);
                 baseLine.WeatherConditions = cond;
@@ -795,13 +801,13 @@ namespace ID.WeatherDashboard.API.Services
 
         private DateTimeOffset GetWeightedAverage(IEnumerable<Tuple<int, DateTimeOffset>> tuples)
         {
-            var minDate = tuples.Min(t => t.Item2.UtcDateTime);
+            var minDate = tuples.Min(t => t.Item2);
             double weightedTicks = 0;
             int totalWeight = 0;
 
             foreach (var t in tuples)
             {
-                var deltaTicks = (t.Item2.UtcDateTime - minDate).Ticks;
+                var deltaTicks = (t.Item2.UtcDateTime - minDate.UtcDateTime).Ticks;
                 weightedTicks += t.Item1 * deltaTicks;
                 totalWeight += t.Item1;
             }
@@ -809,8 +815,8 @@ namespace ID.WeatherDashboard.API.Services
             if (totalWeight > 0)
             {
                 var avgDeltaTicks = weightedTicks / totalWeight;
-                var result = minDate.AddTicks((long)avgDeltaTicks);
-                return new DateTimeOffset(result.Ticks, TimeSpan.Zero);
+                var resultUtc = minDate.UtcDateTime.AddTicks((long)avgDeltaTicks);
+                return new DateTimeOffset(resultUtc, TimeSpan.Zero).ToOffset(minDate.Offset);
             }
 
             return DateTimeOffset.MinValue;
