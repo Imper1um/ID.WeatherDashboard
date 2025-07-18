@@ -158,5 +158,172 @@ namespace ID.WeatherDashboard.APITests.Services
             historyService.Verify(s => s.GetHistoryDataAsync(It.IsAny<Location>(), It.IsAny<DateTimeOffset>(), It.IsAny<DateTimeOffset>()), Times.Once());
         }
 
+        [TestMethod]
+        public async Task GetHistoryDataAsync_ShouldReturnHistoryDataWithLinesWhenValidDataReturned()
+        {
+            var historyService = SetupHistoryQueryService("HistoryTestService");
+
+            var historyLine = GenerateHistoryLine();
+            var historyData = new HistoryData(DateTimeOffset.Now, historyLine);
+
+            historyService.Setup(s => s.GetHistoryDataAsync(It.IsAny<Location>(), It.IsAny<DateTimeOffset>(), It.IsAny<DateTimeOffset>()))
+                .ReturnsAsync(historyData);
+
+            Config.HistoryData = GenerateAllStarConfig("HistoryTestService");
+
+            var dr = GetDataRetriever();
+            var l = new Location("TestLocation");
+
+            var result = await dr.GetHistoryDataAsync(l);
+
+            Assert.IsNotNull(result, "Expected HistoryData to be returned.");
+            Assert.IsTrue(result.Lines.Any(), "Expected HistoryData to contain at least one HistoryLine.");
+            Assert.AreEqual(historyLine.Observed, result.Lines.First().Observed, "Expected HistoryLine Observed time to match.");
+
+            Assert.AreEqual(1, HistoryDataUpdated.Count, "Expected HistoryDataUpdated event to fire once.");
+        }
+
+        [TestMethod]
+        public async Task GetHistoryDataAsync_ShouldReturnCachedDataIfNotExpired()
+        {
+            var historyService = SetupHistoryQueryService("HistoryTestService");
+
+            var historyLine = GenerateHistoryLine();
+            var initialHistoryData = new HistoryData(DateTimeOffset.Now, historyLine);
+
+            historyService.Setup(s => s.GetHistoryDataAsync(It.IsAny<Location>(), It.IsAny<DateTimeOffset>(), It.IsAny<DateTimeOffset>()))
+                .ReturnsAsync(initialHistoryData);
+
+            Config.HistoryData = GenerateAllStarConfig("HistoryTestService");
+
+            var dr = GetDataRetriever();
+            var l = new Location("TestLocation");
+
+            var firstResult = await dr.GetHistoryDataAsync(l);
+            Assert.IsNotNull(firstResult);
+
+            var secondResult = await dr.GetHistoryDataAsync(l);
+            Assert.IsNotNull(secondResult);
+
+            Assert.AreSame(firstResult, secondResult, "Expected cached HistoryData to be returned.");
+            Assert.IsTrue(secondResult.Lines.Any(), "Expected cached HistoryData to still contain lines.");
+            historyService.Verify(s => s.GetHistoryDataAsync(It.IsAny<Location>(), It.IsAny<DateTimeOffset>(), It.IsAny<DateTimeOffset>()), Times.Once());
+            Assert.AreEqual(1, HistoryDataUpdated.Count, "Expected HistoryDataUpdated event to fire once.");
+        }
+
+        [TestMethod]
+        public async Task GetHistoryDataAsync_ShouldRefreshDataIfExpired()
+        {
+            var historyService = SetupHistoryQueryService("HistoryTestService");
+
+            var initialLine = GenerateHistoryLine(observed: DateTimeOffset.Now.AddDays(-1));
+            var initialHistoryData = new HistoryData(DateTimeOffset.Now, initialLine);
+
+            var refreshedLine = GenerateHistoryLine(observed: DateTimeOffset.Now);
+            var refreshedHistoryData = new HistoryData(DateTimeOffset.Now, refreshedLine);
+
+            var historyDataToReturn = initialHistoryData;
+            historyService.Setup(s => s.GetHistoryDataAsync(It.IsAny<Location>(), It.IsAny<DateTimeOffset>(), It.IsAny<DateTimeOffset>()))
+                .ReturnsAsync(() => historyDataToReturn);
+
+            Config.HistoryData = GenerateAllStarConfig("HistoryTestService");
+
+            var dr = GetDataRetriever();
+            var l = new Location("TestLocation");
+
+            var firstResult = await dr.GetHistoryDataAsync(l);
+            Assert.IsNotNull(firstResult);
+
+            firstResult.Pulled = DateTimeOffset.Now.AddHours(-12);
+
+            historyDataToReturn = refreshedHistoryData;
+
+            var secondResult = await dr.GetHistoryDataAsync(l);
+            Assert.IsNotNull(secondResult);
+
+            Assert.IsTrue(secondResult.Lines.Any(hl => hl.Observed == refreshedLine.Observed), "Expected refreshed HistoryData with new HistoryLine.");
+            historyService.Verify(s => s.GetHistoryDataAsync(It.IsAny<Location>(), It.IsAny<DateTimeOffset>(), It.IsAny<DateTimeOffset>()), Times.Exactly(2));
+            Assert.AreEqual(2, HistoryDataUpdated.Count, "Expected HistoryDataUpdated event to fire twice.");
+        }
+
+        [TestMethod]
+        public async Task GetHistoryDataAsync_ShouldReplaceDataIfOverlayIsFalse()
+        {
+            var historyService = SetupHistoryQueryService("HistoryTestService");
+
+            var initialLine = GenerateHistoryLine(observed: DateTime.Today.AddDays(-1));
+            var initialHistoryData = new HistoryData(DateTimeOffset.Now, initialLine);
+
+            var newLine = GenerateHistoryLine(observed: DateTime.Today);
+            var refreshedHistoryData = new HistoryData(DateTimeOffset.Now, newLine);
+
+            var historyDataToReturn = initialHistoryData;
+            historyService.Setup(s => s.GetHistoryDataAsync(It.IsAny<Location>(), It.IsAny<DateTimeOffset>(), It.IsAny<DateTimeOffset>()))
+                .ReturnsAsync(() => historyDataToReturn);
+
+            Config.HistoryData = GenerateAllStarConfig("HistoryTestService");
+            Config.HistoryData.OverlayExistingData = false;
+
+            var dr = GetDataRetriever();
+            var l = new Location("TestLocation");
+
+            var firstResult = await dr.GetHistoryDataAsync(l);
+            Assert.IsNotNull(firstResult);
+
+            firstResult.Pulled = DateTimeOffset.Now.AddHours(-12);
+
+            historyDataToReturn = refreshedHistoryData;
+
+            var secondResult = await dr.GetHistoryDataAsync(l);
+            Assert.IsNotNull(secondResult);
+
+            Assert.AreEqual(1, secondResult.Lines.Count(), "Expected exactly one HistoryLine after replace.");
+            Assert.AreEqual(newLine.Observed, secondResult.Lines.First().Observed, "Expected replaced HistoryLine to have the refreshed date.");
+
+            historyService.Verify(s => s.GetHistoryDataAsync(It.IsAny<Location>(), It.IsAny<DateTimeOffset>(), It.IsAny<DateTimeOffset>()), Times.Exactly(2));
+            Assert.AreEqual(2, HistoryDataUpdated.Count, "Expected HistoryDataUpdated event to fire twice.");
+        }
+
+        [TestMethod]
+        public async Task GetHistoryDataAsync_ShouldMergeDataWithNewOnRefreshIfOverlayIsTrue()
+        {
+            var historyService = SetupHistoryQueryService("HistoryTestService");
+
+            var initialLine = GenerateHistoryLine(observed: DateTime.Today.AddDays(-1));
+            var initialHistoryData = new HistoryData(DateTimeOffset.Now, initialLine);
+
+            var refreshedLine = GenerateHistoryLine(observed: DateTime.Today);
+            var refreshedHistoryData = new HistoryData(DateTimeOffset.Now, refreshedLine);
+
+            var historyDataToReturn = initialHistoryData;
+            historyService.Setup(s => s.GetHistoryDataAsync(It.IsAny<Location>(), It.IsAny<DateTimeOffset>(), It.IsAny<DateTimeOffset>()))
+                .ReturnsAsync(() => historyDataToReturn);
+
+            Config.HistoryData = GenerateAllStarConfig("HistoryTestService");
+            Config.HistoryData.OverlayExistingData = true;
+
+            var dr = GetDataRetriever();
+            var l = new Location("TestLocation");
+
+            var firstResult = await dr.GetHistoryDataAsync(l);
+            Assert.IsNotNull(firstResult);
+
+            firstResult.Pulled = DateTimeOffset.Now.AddHours(-12);
+
+            historyDataToReturn = refreshedHistoryData;
+
+            var secondResult = await dr.GetHistoryDataAsync(l);
+            Assert.IsNotNull(secondResult);
+
+            var lines = secondResult.Lines.ToList();
+
+            Assert.AreEqual(2, lines.Count, "Expected both initial and refreshed HistoryLines to be present due to overlay.");
+            Assert.IsTrue(lines.Any(sl => sl.Observed == initialLine.Observed), "Initial HistoryLine should remain.");
+            Assert.IsTrue(lines.Any(sl => sl.Observed == refreshedLine.Observed), "Refreshed HistoryLine should be added.");
+
+            historyService.Verify(s => s.GetHistoryDataAsync(It.IsAny<Location>(), It.IsAny<DateTimeOffset>(), It.IsAny<DateTimeOffset>()), Times.Exactly(2));
+            Assert.AreEqual(2, HistoryDataUpdated.Count, "Expected HistoryDataUpdated event to fire twice.");
+        }
+
     }
 }
