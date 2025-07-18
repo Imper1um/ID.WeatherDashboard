@@ -708,8 +708,186 @@ namespace ID.WeatherDashboard.APITests.Services
                 $"Expected weighted average between {minDate.UtcDateTime} and {maxDate.UtcDateTime}, but got {result.UtcDateTime}. Weights were {weight1} and {weight2}.");
         }
 
+        private async Task TestSunPropertyWeighting(string elementName, DateTimeOffset minValue, DateTimeOffset maxValue, Action<SunLine, DateTimeOffset> setValue, Func<SunLine, DateTimeOffset?> getValue, int? service1Weight = null, int? service2Weight = null)
+        {
+            service1Weight = service1Weight ?? TestHelpers.RandomIntBetween(100, 500);
+            service2Weight = service2Weight ?? TestHelpers.RandomIntBetween(100, 500);
 
+            var sunService1Name = TestHelpers.RandomString(8, TestHelpers.UppercaseLetters, TestHelpers.LowercaseLetters);
+            var sunService2Name = TestHelpers.RandomString(8, TestHelpers.UppercaseLetters, TestHelpers.LowercaseLetters);
 
+            var sunService1 = SetupSunDataService(sunService1Name);
+            var sunService2 = SetupSunDataService(sunService2Name);
 
+            var commonDate = DateTime.Today;
+
+            var sunLine1 = GenerateSunLine();
+            var sunLine2 = GenerateSunLine();
+
+            setValue(sunLine1, minValue);
+            setValue(sunLine2, maxValue);
+
+            var sunData1 = new SunData(DateTimeOffset.Now, sunLine1);
+            var sunData2 = new SunData(DateTimeOffset.Now, sunLine2);
+
+            sunService1.Setup(s => s.GetSunDataAsync(It.IsAny<Location>(), It.IsAny<DateTimeOffset>(), It.IsAny<DateTimeOffset>()))
+                .ReturnsAsync(sunData1);
+
+            sunService2.Setup(s => s.GetSunDataAsync(It.IsAny<Location>(), It.IsAny<DateTimeOffset>(), It.IsAny<DateTimeOffset>()))
+                .ReturnsAsync(sunData2);
+
+            Config.SunData = new DataConfig()
+            {
+                OverlayExistingData = true,
+                Elements = [
+                    new ElementConfig
+                    {
+                        Name = elementName,
+                        ServiceElements = [
+                            new ServiceElementConfig() { ServiceName = sunService1Name, Action = "Average", Weight = service1Weight.Value },
+                            new ServiceElementConfig() { ServiceName = sunService2Name, Action = "Average", Weight = service2Weight.Value}
+                        ]
+                    }
+                ]
+            };
+
+            var dr = GetDataRetriever();
+            var l = new Location("TestLocation");
+
+            var result = await dr.GetSunDataAsync(l);
+
+            Assert.IsNotNull(result, "Expected SunData to be returned.");
+            Assert.IsNotNull(result.Lines, "Expected lines to exist.");
+            Assert.IsTrue(result.Lines.Any(), "Expected lines to have at least one line.");
+            var val = getValue(result.Lines.First());
+            Assert.IsNotNull(val, $"Expected {elementName} to be set.");
+
+            double ticks1 = 0;
+            double ticks2 = (maxValue.UtcTicks - minValue.UtcTicks);
+            double expectedWeighted = ((ticks1 * service1Weight.Value) + (ticks2 * service2Weight.Value)) / (double)(service1Weight.Value + service2Weight.Value);
+            var timeExpected = minValue.AddTicks((long)expectedWeighted);
+            Assert.AreEqual(timeExpected.UtcTicks, val.Value.UtcTicks, 100000, $"Weight was {service1Weight},{service2Weight} between {minValue} and {maxValue} with expected weighted average to be {timeExpected} but was {val}.");
+        }
+
+        [TestMethod]
+        public async Task GetSunDataAsync_ShouldWeightAstronomicalTwilightBegin()
+        {
+            await TestSunPropertyWeighting(
+                "AstronomicalTwilightBegin",
+                DateTimeOffset.Now.AddMinutes(TestHelpers.RandomIntBetween(-120, -60)),
+                DateTimeOffset.Now.AddMinutes(TestHelpers.RandomIntBetween(60, 120)),
+                (sl, t) => sl.AstronomicalTwilightBegin = t,
+                sl => sl.AstronomicalTwilightBegin);
+        }
+
+        [TestMethod]
+        public async Task GetSunDataAsync_ShouldWeightNauticalTwilightBegin()
+        {
+            await TestSunPropertyWeighting(
+                "NauticalTwilightBegin",
+                DateTimeOffset.Now.AddMinutes(TestHelpers.RandomIntBetween(-120, -60)),
+                DateTimeOffset.Now.AddMinutes(TestHelpers.RandomIntBetween(60, 120)),
+                (sl, t) => sl.NauticalTwilightBegin = t,
+                sl => sl.NauticalTwilightBegin);
+        }
+
+        [TestMethod]
+        public async Task GetSunDataAsync_ShouldWeightCivilTwilightBegin()
+        {
+            await TestSunPropertyWeighting(
+                "CivilTwilightBegin",
+                DateTimeOffset.Now.AddMinutes(TestHelpers.RandomIntBetween(-120, -60)),
+                DateTimeOffset.Now.AddMinutes(TestHelpers.RandomIntBetween(60, 120)),
+                (sl, t) => sl.CivilTwilightBegin = t,
+                sl => sl.CivilTwilightBegin);
+        }
+
+        [TestMethod]
+        public async Task GetSunDataAsync_ShouldWeightSunrise()
+        {
+            await TestSunPropertyWeighting(
+                "Sunrise",
+                DateTimeOffset.Now.AddMinutes(TestHelpers.RandomIntBetween(-120, -60)),
+                DateTimeOffset.Now.AddMinutes(TestHelpers.RandomIntBetween(60, 120)),
+                (sl, t) => sl.Sunrise = t,
+                sl => sl.Sunrise);
+        }
+
+        [TestMethod]
+        public async Task GetSunDataAsync_ShouldWeightDayStart()
+        {
+            await TestSunPropertyWeighting(
+                "DayStart",
+                DateTimeOffset.Now.AddMinutes(TestHelpers.RandomIntBetween(-120, -60)),
+                DateTimeOffset.Now.AddMinutes(TestHelpers.RandomIntBetween(60, 120)),
+                (sl, t) => sl.DayStart = t,
+                sl => sl.DayStart);
+        }
+
+        [TestMethod]
+        public async Task GetSunDataAsync_ShouldWeightSolarNoon()
+        {
+            await TestSunPropertyWeighting(
+                "SolarNoon",
+                DateTimeOffset.Now.AddMinutes(TestHelpers.RandomIntBetween(-120, -60)),
+                DateTimeOffset.Now.AddMinutes(TestHelpers.RandomIntBetween(60, 120)),
+                (sl, t) => sl.SolarNoon = t,
+                sl => sl.SolarNoon);
+        }
+
+        [TestMethod]
+        public async Task GetSunDataAsync_ShouldWeightDayEnd()
+        {
+            await TestSunPropertyWeighting(
+                "DayEnd",
+                DateTimeOffset.Now.AddMinutes(TestHelpers.RandomIntBetween(-120, -60)),
+                DateTimeOffset.Now.AddMinutes(TestHelpers.RandomIntBetween(60, 120)),
+                (sl, t) => sl.DayEnd = t,
+                sl => sl.DayEnd);
+        }
+
+        [TestMethod]
+        public async Task GetSunDataAsync_ShouldWeightSunset()
+        {
+            await TestSunPropertyWeighting(
+                "Sunset",
+                DateTimeOffset.Now.AddMinutes(TestHelpers.RandomIntBetween(-120, -60)),
+                DateTimeOffset.Now.AddMinutes(TestHelpers.RandomIntBetween(60, 120)),
+                (sl, t) => sl.Sunset = t,
+                sl => sl.Sunset);
+        }
+
+        [TestMethod]
+        public async Task GetSunDataAsync_ShouldWeightCivilTwilightEnd()
+        {
+            await TestSunPropertyWeighting(
+                "CivilTwilightEnd",
+                DateTimeOffset.Now.AddMinutes(TestHelpers.RandomIntBetween(-120, -60)),
+                DateTimeOffset.Now.AddMinutes(TestHelpers.RandomIntBetween(60, 120)),
+                (sl, t) => sl.CivilTwilightEnd = t,
+                sl => sl.CivilTwilightEnd);
+        }
+
+        [TestMethod]
+        public async Task GetSunDataAsync_ShouldWeightNauticalTwilightEnd()
+        {
+            await TestSunPropertyWeighting(
+                "NauticalTwilightEnd",
+                DateTimeOffset.Now.AddMinutes(TestHelpers.RandomIntBetween(-120, -60)),
+                DateTimeOffset.Now.AddMinutes(TestHelpers.RandomIntBetween(60, 120)),
+                (sl, t) => sl.NauticalTwilightEnd = t,
+                sl => sl.NauticalTwilightEnd);
+        }
+
+        [TestMethod]
+        public async Task GetSunDataAsync_ShouldWeightAstronomicalTwilightEnd()
+        {
+            await TestSunPropertyWeighting(
+                "AstronomicalTwilightEnd",
+                DateTimeOffset.Now.AddMinutes(TestHelpers.RandomIntBetween(-120, -60)),
+                DateTimeOffset.Now.AddMinutes(TestHelpers.RandomIntBetween(60, 120)),
+                (sl, t) => sl.AstronomicalTwilightEnd = t,
+                sl => sl.AstronomicalTwilightEnd);
+        }
     }
 }

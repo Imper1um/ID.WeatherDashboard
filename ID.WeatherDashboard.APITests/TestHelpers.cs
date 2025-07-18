@@ -48,6 +48,13 @@
             return (int)(minValue + (Random.Shared.NextDouble() * (maxValue - minValue)));
         }
 
+        public static DateTimeOffset RandomDateTimeOffsetBetween(DateTimeOffset minValue, DateTimeOffset maxValue)
+        {
+            var ticksBetween = (maxValue - minValue).Ticks;
+            var ticksToAdd = Random.Shared.NextDouble() * ticksBetween;
+            return minValue.AddTicks((long)ticksToAdd);
+        }
+
         public static T InvokePrivateGenericMethod<T>(this object obj, string methodName, Type[] parameterTypes, params object[] parameters)
         {
             var method = obj.GetType()
