@@ -815,8 +815,8 @@ namespace ID.WeatherDashboard.API.Services
             if (totalWeight > 0)
             {
                 var avgDeltaTicks = weightedTicks / totalWeight;
-                var result = minDate.UtcDateTime.AddTicks((long)avgDeltaTicks);
-                return new DateTimeOffset(result.Ticks, minDate.Offset);
+                var resultUtc = minDate.UtcDateTime.AddTicks((long)avgDeltaTicks);
+                return new DateTimeOffset(resultUtc, TimeSpan.Zero).ToOffset(minDate.Offset);
             }
 
             return DateTimeOffset.MinValue;
