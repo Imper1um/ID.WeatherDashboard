@@ -171,6 +171,7 @@ namespace ID.WeatherDashboard.API.Services
             SetElement(config, currentData, serviceQueries, "WeatherConditions.SnowRate", (c, i) => c.WeatherConditions!.SnowRate = i, c => c.WeatherConditions?.SnowRate);
             SetElement(config, currentData, serviceQueries, "WeatherConditions.CloudCoverPercentage", (c, i) => c.WeatherConditions!.CloudCoverPercentage = i, c => c.WeatherConditions?.CloudCoverPercentage);
             SetElement(config, currentData, serviceQueries, "WeatherConditions.MoonPhase", (c, i) => c.WeatherConditions!.MoonPhase = i, c => c.WeatherConditions?.MoonPhase);
+            SetElement(config, currentData, serviceQueries, $"{nameof(WeatherConditions)}.{nameof(WeatherConditions.MoonAngle)}", (c, i) => c.WeatherConditions!.MoonAngle = i, c => c.WeatherConditions?.MoonAngle);
             SetElement(config, currentData, serviceQueries, "WeatherConditions.WindGustSpeed", (c, i) => c.WeatherConditions!.WindGustSpeed = i, c => c.WeatherConditions?.WindGustSpeed);
             SetElement(config, currentData, serviceQueries, "WeatherConditions.WindSpeed", (c, i) => c.WeatherConditions!.WindSpeed = i, c => c.WeatherConditions?.WindSpeed);
             SetElement(config, currentData, serviceQueries, "WeatherConditions.Visibility", (c, i) => c.WeatherConditions!.Visibility = i, c => c.WeatherConditions?.Visibility);
@@ -725,6 +726,8 @@ namespace ID.WeatherDashboard.API.Services
                 SetElement(config, moonData, moonLines, $"{nameof(SunLine.MoonData)}.{nameof(MoonData.MoonParallacticAngle)}", (sl, b) => sl.MoonParallacticAngle = b, sl => sl.MoonParallacticAngle);
                 SetElement(config, moonData, moonLines, $"{nameof(SunLine.MoonData)}.{nameof(MoonData.MoonDistance)}", (sl, b) => sl.MoonDistance = b, sl => sl.MoonDistance);
                 SetElement(config, moonData, moonLines, $"{nameof(SunLine.MoonData)}.{nameof(MoonData.MoonAltitude)}", (sl, b) => sl.MoonAltitude = b, sl => sl.MoonAltitude);
+                SetElement(config, moonData, moonLines, $"{nameof(SunLine.MoonData)}.{nameof(MoonData.Moonrise)}", (sl, b) => sl.Moonrise = b, sl => sl.Moonrise);
+                SetElement(config, moonData, moonLines, $"{nameof(SunLine.MoonData)}.{nameof(MoonData.Moonset)}", (sl, b) => sl.Moonset = b, sl => sl.Moonset);
 
                 lines.Add(baseLine);
             }
@@ -1025,7 +1028,7 @@ namespace ID.WeatherDashboard.API.Services
 
                 }
             }
-            if (averageValues.Any())
+            if (averageValues.Count != 0)
             {
                 strValue = new WindDirection(GetWeightedAverage(averageValues));
             }
@@ -1046,8 +1049,10 @@ namespace ID.WeatherDashboard.API.Services
                     if (retValue?.TemperatureValue != null)
                     {
                         if (e.Action == "Average")
+                        {
                             if (retValue.TemperatureValue != null)
                                 averageValues.Add(new Tuple<int, float>(e.Weight, retValue.To(TemperatureEnum.Fahrenheit)!.Value));
+                        }
                         else if (e.Action == "Override")
                         {
                             averageValues.Clear();
@@ -1057,7 +1062,7 @@ namespace ID.WeatherDashboard.API.Services
 
                 }
             }
-            if (averageValues.Any())
+            if (averageValues.Count != 0)
             {
                 strValue = new Temperature((float?)GetWeightedAverage(averageValues));
             }

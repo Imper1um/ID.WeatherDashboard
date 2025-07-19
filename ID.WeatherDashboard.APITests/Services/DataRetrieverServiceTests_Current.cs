@@ -1,4 +1,4 @@
-using ID.WeatherDashboard.API.Codes;
+﻿using ID.WeatherDashboard.API.Codes;
 using ID.WeatherDashboard.API.Config;
 using ID.WeatherDashboard.API.Data;
 using ID.WeatherDashboard.API.Services;
@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Text.Json;
 
 namespace ID.WeatherDashboard.APITests.Services
 {
@@ -92,7 +93,7 @@ namespace ID.WeatherDashboard.APITests.Services
             Coordinates? coordinates = null,
             WeatherConditions? weatherConditions = null)
         {
-            return new CurrentData(pulled ?? DateTimeOffset.Now, sources ?? Array.Empty<string>())
+            return new CurrentData(pulled ?? DateTimeOffset.Now, sources ?? [])
             {
                 Observed = observed ?? DateTimeOffset.Now,
                 WindDirection = windDirection,
@@ -229,7 +230,7 @@ namespace ID.WeatherDashboard.APITests.Services
             var dr = GetDataRetriever();
             var l = new Location("TestLocation");
             Config.CurrentData = GenerateAllStarConfig("CurrentService");
-            await Assert.ThrowsExceptionAsync<InvalidOperationException>(() => dr.GetCurrentDataAsync(l));
+            await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => dr.GetCurrentDataAsync(l));
         }
 
         [TestMethod]
@@ -239,7 +240,7 @@ namespace ID.WeatherDashboard.APITests.Services
             SetupDefaults();
             var dr = GetDataRetriever();
             var l = new Location("TestLocation");
-            await Assert.ThrowsExceptionAsync<InvalidOperationException>(() => dr.GetCurrentDataAsync(l));
+            await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => dr.GetCurrentDataAsync(l));
             service.Verify(s=>s.GetCurrentDataAsync(It.IsAny<Location>()), Times.Never());
         }
 
@@ -251,7 +252,7 @@ namespace ID.WeatherDashboard.APITests.Services
             Config.CurrentData = GenerateAllStarConfig("Service1","Service2");
             var dr = GetDataRetriever();
             var l = new Location("TestLocation");
-            await Assert.ThrowsExceptionAsync<InvalidOperationException>(() => dr.GetCurrentDataAsync(l));
+            await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => dr.GetCurrentDataAsync(l));
         }
 
         [TestMethod]
@@ -265,7 +266,7 @@ namespace ID.WeatherDashboard.APITests.Services
             Config.CurrentData = GenerateAllStarConfig("Service1","Service2");
             var dr = GetDataRetriever();
             var l = new Location("TestLocation");
-            await Assert.ThrowsExceptionAsync<InvalidOperationException>(() => dr.GetCurrentDataAsync(l));
+            await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => dr.GetCurrentDataAsync(l));
             s1.Verify(s=>s.GetCurrentDataAsync(It.IsAny<Location>()), Times.Once());
             s2.Verify(s=>s.GetCurrentDataAsync(It.IsAny<Location>()), Times.Once());
         }
@@ -303,6 +304,7 @@ namespace ID.WeatherDashboard.APITests.Services
             var result = await dr.GetCurrentDataAsync(l);
             Assert.IsNotNull(result);
             Assert.AreEqual(55, result.Humidity);
+            Assert.IsNotNull(result.CurrentTemperature, $"Result current temperature did not output! Result Output: {JsonSerializer.Serialize(result)}");
             Assert.AreEqual(70, result.CurrentTemperature!.To(TemperatureEnum.Fahrenheit));
         }
 
@@ -351,9 +353,11 @@ namespace ID.WeatherDashboard.APITests.Services
             var dr = GetDataRetriever();
             var l = new Location("TestLocation");
             var first = await dr.GetCurrentDataAsync(l);
+            Assert.IsNotNull(first);
             first.Pulled = DateTimeOffset.Now.AddMinutes(-10);
             current = refreshed;
             var second = await dr.GetCurrentDataAsync(l);
+            Assert.IsNotNull(second);
             Assert.AreEqual(refreshed.Observed, second.Observed);
             service.Verify(s=>s.GetCurrentDataAsync(It.IsAny<Location>()), Times.Exactly(2));
             Assert.AreEqual(2, CurrentDataUpdated.Count);
@@ -373,9 +377,11 @@ namespace ID.WeatherDashboard.APITests.Services
             var dr = GetDataRetriever();
             var l = new Location("TestLocation");
             var first = await dr.GetCurrentDataAsync(l);
+            Assert.IsNotNull(first);
             first.Pulled = DateTimeOffset.Now.AddHours(-2);
             current = refreshed;
             var second = await dr.GetCurrentDataAsync(l);
+            Assert.IsNotNull(second);
             Assert.AreEqual(refreshed.Observed, second.Observed);
             service.Verify(s=>s.GetCurrentDataAsync(It.IsAny<Location>()), Times.Exactly(2));
             Assert.AreEqual(2, CurrentDataUpdated.Count);
@@ -395,10 +401,13 @@ namespace ID.WeatherDashboard.APITests.Services
             var dr = GetDataRetriever();
             var l = new Location("TestLocation");
             var first = await dr.GetCurrentDataAsync(l);
+            Assert.IsNotNull(first);
             first.Pulled = DateTimeOffset.Now.AddMinutes(-10);
             current = refreshData;
             var second = await dr.GetCurrentDataAsync(l);
+            Assert.IsNotNull(second);
             Assert.AreEqual(40, second.Humidity);
+            Assert.IsNotNull(second.CurrentTemperature);
             Assert.AreEqual(75, second.CurrentTemperature!.To(TemperatureEnum.Fahrenheit));
         }
 
@@ -416,10 +425,13 @@ namespace ID.WeatherDashboard.APITests.Services
             var dr = GetDataRetriever();
             var l = new Location("TestLocation");
             var first = await dr.GetCurrentDataAsync(l);
+            Assert.IsNotNull(first);
             first.Pulled = DateTimeOffset.Now.AddMinutes(-10);
             current = refreshData;
             var second = await dr.GetCurrentDataAsync(l);
+            Assert.IsNotNull(second);
             Assert.IsNull(second.Humidity);
+            Assert.IsNotNull(second.CurrentTemperature);
             Assert.AreEqual(75, second.CurrentTemperature!.To(TemperatureEnum.Fahrenheit));
         }
 
@@ -441,6 +453,7 @@ namespace ID.WeatherDashboard.APITests.Services
                 Moonset = DateTimeOffset.Now.Date.AddHours(13),
                 MoonDeclination = new MoonProperty(10, DateTimeOffset.Now)
             };
+            Assert.IsNotNull(moonData.MoonAngleAt(DateTime.Now), "Moon Angle could not be inferred! Some data is missing, or the method is broken.");
             var solarNoon = DateTimeOffset.Now.Date.AddHours(12);
             var sunLine = new SunLine(DateTimeOffset.Now) { SolarNoon = solarNoon, MoonData = moonData, For = DateTime.Today };
             var sunData = new SunData(DateTimeOffset.Now, sunLine);
@@ -454,11 +467,15 @@ namespace ID.WeatherDashboard.APITests.Services
             var result = await dr.GetCurrentDataAsync(l);
             Assert.IsNotNull(result);
             var expectedAngle = GetExpectedSunAngle(wc, solarNoon);
-            Assert.AreEqual(expectedAngle, result.WeatherConditions!.SunAngle!.Value, 0.01);
-            Assert.AreEqual(moonData.MoonAngleAt(DateTime.Now)!.Value, result.WeatherConditions!.MoonAngle!.Value, 0.01);
+            Assert.IsNotNull(result.WeatherConditions?.SunAngle, "Sun Angle is not provided in the result!");
+            Assert.AreEqual(expectedAngle, result.WeatherConditions.SunAngle.Value, 0.01);
+            var moonDataAngle = moonData.MoonAngleAt(DateTime.Now);
+            Assert.IsNotNull(moonDataAngle);
+            Assert.IsNotNull(result.WeatherConditions?.MoonAngle, $"Moon Angle wasn't merged when it should have been. {(result.WeatherConditions == null ? "WeatherConditions is null" : "")} / {(result.WeatherConditions?.MoonAngle == null ? "MoonAngle is null" : "")}");
+            Assert.AreEqual(moonDataAngle.Value, result.WeatherConditions.MoonAngle.Value, 0.01);
         }
 
-        private float GetExpectedSunAngle(WeatherConditions wc, DateTimeOffset solarNoon)
+        private static float GetExpectedSunAngle(WeatherConditions wc, DateTimeOffset solarNoon)
         {
             var dayOfYear = (double)wc.Time.DayOfYear;
             var declinationDegrees = -23.4 * Math.Cos((360.0 / 365 * (dayOfYear + 10)).ToRadians());
@@ -493,6 +510,7 @@ namespace ID.WeatherDashboard.APITests.Services
             var dr = GetDataRetriever();
             var l = new Location("TestLocation");
             var result = await dr.GetCurrentDataAsync(l);
+            Assert.IsNotNull(result);
             Assert.IsTrue(result.WeatherConditions!.IsTornado!.Value);
             Assert.IsTrue(result.WeatherConditions!.IsWarning!.Value);
             Assert.IsFalse(result.WeatherConditions!.IsHurricane!.Value);
@@ -527,7 +545,7 @@ namespace ID.WeatherDashboard.APITests.Services
             Config.CurrentData = GenerateAllStarConfig("Current");
             var dr = GetDataRetriever();
             var l = new Location("TestLocation");
-            await Assert.ThrowsExceptionAsync<InvalidOperationException>(() => dr.GetCurrentDataAsync(l));
+            await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => dr.GetCurrentDataAsync(l));
             Assert.AreEqual(0, CurrentDataUpdated.Count);
         }
 
