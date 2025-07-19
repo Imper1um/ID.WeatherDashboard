@@ -1,7 +1,7 @@
 ﻿using ID.WeatherDashboard.API.Codes;
+using ID.WeatherDashboard.API.Config;
 using ID.WeatherDashboard.API.Data;
 using ID.WeatherDashboard.API.Services;
-using ID.WeatherDashboard.API.Config;
 using Moq;
 
 namespace ID.WeatherDashboard.APITests.Services

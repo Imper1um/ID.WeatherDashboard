@@ -8,10 +8,10 @@ namespace ID.WeatherDashboard.API.Services
 {
     public interface IJsonQueryService
     {
-        Task<Stream> QueryStreamAsync(string url, params Tuple<string, string>[] parameters);
+        Task<Stream?> QueryStreamAsync(string url, params Tuple<string, string>[] parameters);
 
-        Task<string> QueryStringAsync(string url, params Tuple<string, string>[] headers);
+        Task<string?> QueryStringAsync(string url, params Tuple<string, string>[] headers);
 
-        Task<T> QueryAsync<T>(string url, params Tuple<string, string>[] headers);
+        Task<T?> QueryAsync<T>(string url, params Tuple<string, string>[] headers);
     }
 }

@@ -2,7 +2,6 @@
 using ID.WeatherDashboard.API.Data;
 using ID.WeatherDashboard.API.Services;
 using Moq;
-using System.Reflection;
 using System.Text.Json;
 
 namespace ID.WeatherDashboard.APITests.Services
@@ -544,6 +543,7 @@ namespace ID.WeatherDashboard.APITests.Services
             Assert.IsNotNull(result, "Expected SunData to be returned.");
             var moonData = result.Lines.First(l => l.For.Date == commonDate).MoonData;
             Assert.IsNotNull(moonData, "Expected MoonData to be present after overlay.");
+            Assert.IsNotNull(moonData.MoonPhase);
             Assert.IsTrue(Enum.IsDefined(typeof(MoonPhase), moonData.MoonPhase), "Expected MoonPhase to be set after overlay.");
             Assert.AreEqual(1, SunDataUpdated.Count, "Expected SunDataUpdated event to fire once.");
         }

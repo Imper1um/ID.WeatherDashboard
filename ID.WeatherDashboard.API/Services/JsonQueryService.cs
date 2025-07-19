@@ -12,7 +12,7 @@ namespace ID.WeatherDashboard.API.Services
             _httpClient = new HttpClient();
         }
 
-        public async Task<string> QueryStringAsync(string url, params Tuple<string, string>[] headers)
+        public async Task<string?> QueryStringAsync(string url, params Tuple<string, string>[] headers)
         {
             try
             {
@@ -33,7 +33,7 @@ namespace ID.WeatherDashboard.API.Services
             }
         }
 
-        public async Task<Stream> QueryStreamAsync(string url, params Tuple<string, string>[] headers)
+        public async Task<Stream?> QueryStreamAsync(string url, params Tuple<string, string>[] headers)
         {
             try
             {
@@ -56,13 +56,14 @@ namespace ID.WeatherDashboard.API.Services
             }
         }
 
-        public async Task<T> QueryAsync<T>(string url, params Tuple<string, string>[] headers)
+        public async Task<T?> QueryAsync<T>(string url, params Tuple<string, string>[] headers)
         {
             try
             {
-                var jsonString = await QueryStringAsync(url, headers);
-                return JsonSerializer.Deserialize<T>(jsonString)
-                       ?? throw new QueryFailureException($"Deserialization returned null for {url}.");
+                var jsonStream = await QueryStreamAsync(url, headers);
+                if (jsonStream == null) return default;
+                var t = await JsonSerializer.DeserializeAsync<T>(jsonStream);
+                return t == null ? throw new QueryFailureException($"Deserialization returned null for {url}.") : t;
             }
             catch (JsonException ex)
             {
