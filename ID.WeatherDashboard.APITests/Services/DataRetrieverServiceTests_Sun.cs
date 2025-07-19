@@ -613,6 +613,96 @@ namespace ID.WeatherDashboard.APITests.Services
             Assert.AreEqual(expectedWeighted, val.Value, 0.01, $"Expected weighted average to be {expectedWeighted} but was {val}.");
         }
 
+        private async Task TestMoonPropertyWeighting(string elementName, DateTimeOffset minValue, DateTimeOffset maxValue, Action<MoonData, DateTimeOffset> setValue, Func<MoonData, DateTimeOffset?> getValue, int? service1Weight = null, int? service2Weight = null)
+        {
+            service1Weight = service1Weight ?? TestHelpers.RandomIntBetween(100, 500);
+            service2Weight = service2Weight ?? TestHelpers.RandomIntBetween(100, 500);
+
+            var sunService1Name = TestHelpers.RandomString(8, TestHelpers.UppercaseLetters, TestHelpers.LowercaseLetters);
+            var sunService2Name = TestHelpers.RandomString(8, TestHelpers.UppercaseLetters, TestHelpers.LowercaseLetters);
+
+            var sunService1 = SetupSunDataService(sunService1Name);
+            var sunService2 = SetupSunDataService(sunService2Name);
+
+            var commonDate = DateTime.Today;
+
+            var value1 = TestHelpers.RandomDateTimeOffsetBetween(minValue, maxValue);
+            var value2 = TestHelpers.RandomDateTimeOffsetBetween(minValue, maxValue);
+
+            var moonData1 = GenerateMoonData();
+            var moonData2 = GenerateMoonData();
+
+            setValue(moonData1, value1);
+            setValue(moonData2, value2);
+
+            var sunLine1 = GenerateSunLine(forDatetime: commonDate, moonData: moonData1);
+            var sunLine2 = GenerateSunLine(forDatetime: commonDate, moonData: moonData2);
+
+            var sunData1 = new SunData(DateTimeOffset.Now, sunLine1);
+            var sunData2 = new SunData(DateTimeOffset.Now, sunLine2);
+
+            sunService1.Setup(s => s.GetSunDataAsync(It.IsAny<Location>(), It.IsAny<DateTimeOffset>(), It.IsAny<DateTimeOffset>()))
+                .ReturnsAsync(sunData1);
+
+            sunService2.Setup(s => s.GetSunDataAsync(It.IsAny<Location>(), It.IsAny<DateTimeOffset>(), It.IsAny<DateTimeOffset>()))
+                .ReturnsAsync(sunData2);
+
+            Config.SunData = new DataConfig()
+            {
+                OverlayExistingData = true,
+                Elements = [
+                    new ElementConfig
+                    {
+                        Name = elementName,
+                        ServiceElements = [
+                            new ServiceElementConfig() { ServiceName = sunService1Name, Action = "Average", Weight = service1Weight.Value },
+                            new ServiceElementConfig() { ServiceName = sunService2Name, Action = "Average", Weight = service2Weight.Value}
+                        ]
+                    }
+                ]
+            };
+
+            var dr = GetDataRetriever();
+            var l = new Location("TestLocation");
+
+            var result = await dr.GetSunDataAsync(l);
+
+            Assert.IsNotNull(result, $"Expected {nameof(SunData)} to be returned.");
+            Assert.IsNotNull(result.Lines, "Expected lines to exist.");
+            Assert.IsTrue(result.Lines.Any(), "Expected lines to have at least one line.");
+            var lin = result.Lines.First();
+            Assert.IsNotNull(lin.MoonData, $"Expected {nameof(MoonData)} to be set.");
+            var val = getValue(lin.MoonData);
+            Assert.IsNotNull(val, $"Expected {elementName} to be set.");
+
+            long minTicks = value1.UtcTicks;
+            long maxTicks = value2.UtcTicks;
+            long separatorTicks = maxTicks - minTicks;
+
+            double expectedWeighted = ((separatorTicks * service2Weight.Value)) / (double)(service1Weight.Value + service2Weight.Value);
+            var expectedTime = value1.AddTicks((long)expectedWeighted);
+            var testedTicks = val?.UtcTicks;
+            var expectedTicks = expectedTime.UtcTicks;
+            var expectedMaximumDelta = 60 * TimeSpan.TicksPerSecond;
+            var delta = testedTicks - expectedTicks;
+            if (delta < 0) delta = delta * -1;
+            Assert.IsTrue(delta < expectedMaximumDelta, $"{Environment.NewLine}Expected weighted average to be {expectedTime} but was {val}." +
+                $"{Environment.NewLine} MinDate: {minValue}" +
+                $"{Environment.NewLine} MaxDate: {maxValue}" +
+                $"{Environment.NewLine} value1: {value1}" +
+                $"{Environment.NewLine} value2: {value2}" +
+                $"{Environment.NewLine} service1Weight: {service1Weight}" +
+                $"{Environment.NewLine} service2Weight: {service2Weight}");
+        }
+
+        [TestMethod]
+        public async Task GetSunDataAsync_ShouldWeightMoonRiseCorrectly()
+        {
+            var moonRise = DateTimeOffset.Now.DayOf().AddHours(TestHelpers.RandomIntBetween(1, 4));
+            var moonSet = moonRise.AddHours(TestHelpers.RandomIntBetween(5, 10));
+            await TestMoonPropertyWeighting($"{nameof(MoonData)}.{nameof(MoonData.Moonrise)}", moonRise, moonSet, (md, dto) => md.Moonrise = dto, md => md.Moonrise);
+        }
+
         [TestMethod]
         public async Task GetSunDataAsync_ShouldWeightMoonDeclinationCorrectly()
         {
