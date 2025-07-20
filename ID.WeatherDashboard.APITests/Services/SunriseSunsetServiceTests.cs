@@ -30,6 +30,7 @@ namespace ID.WeatherDashboard.APITests.Services
         public async Task GetSunDataAsync_ShouldThrowWhenLocationMissingCoordinates()
         {
             var location = new Location("Nowhere");
+            service.SetServiceConfig(new SunriseSunsetApiConfig() { Name = TestHelpers.RandomName(), MaxCallsPerDay = 100, MaxCallsPerHour = 100 });
             await Assert.ThrowsExceptionAsync<ArgumentException>(() => service.GetSunDataAsync(location, DateTimeOffset.Now, DateTimeOffset.Now));
         }
 
