@@ -4,9 +4,7 @@ using ID.WeatherDashboard.API.Services;
 using ID.WeatherDashboard.API.Codes;
 using ID.WeatherDashboard.WeatherAPI.Data;
 using ID.WeatherDashboard.WeatherAPI.Services;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using Azure.Core.GeoJson;
 
 namespace ID.WeatherDashboard.APITests.Services
 {
@@ -21,6 +19,19 @@ namespace ID.WeatherDashboard.APITests.Services
         {
             jsonQuery = new Mock<IJsonQueryService>();
             service = new WeatherAPIService(jsonQuery.Object);
+        }
+
+        private WeatherApiConfig SetConfig(string? apiKey = null, string? name = null, int maximumCallsPerHour = 100, int maximumCallsPerDay = 100)
+        {
+            var config = new WeatherApiConfig()
+            {
+                ApiKey = apiKey ?? TestHelpers.RandomString(8, TestHelpers.UppercaseLetters),
+                Name = name ?? TestHelpers.RandomString(8, TestHelpers.UppercaseLetters, TestHelpers.LowercaseLetters),
+                MaxCallsPerDay = maximumCallsPerDay,
+                MaxCallsPerHour = maximumCallsPerHour
+            };
+            service.SetServiceConfig(config);
+            return config;
         }
 
         private static WeatherApiLocation GenerateLocation()
@@ -176,8 +187,7 @@ namespace ID.WeatherDashboard.APITests.Services
         [TestMethod]
         public async Task GetCurrentDataAsync_ShouldRequestCorrectUrlAndMapData()
         {
-            var apiKey = TestHelpers.RandomString(12, TestHelpers.Digits);
-            service.SetServiceConfig(new WeatherApiConfig { ApiKey = apiKey, Name = "WA" });
+            var config = SetConfig();
 
             var locationName = TestHelpers.RandomString(6, TestHelpers.UppercaseLetters);
             var location = new Location(locationName);
@@ -190,7 +200,7 @@ namespace ID.WeatherDashboard.APITests.Services
 
             var result = await service.GetCurrentDataAsync(location);
 
-            var expectedUrl = $"{WeatherAPIService._currentUrl}?key={apiKey}&q={location}";
+            var expectedUrl = $"{WeatherAPIService._currentUrl}?key={config.ApiKey}&q={location}";
             Assert.AreEqual(expectedUrl, requestedUrl, $"URL mismatch for location {location}. Expected {expectedUrl} but got {requestedUrl}.");
             Assert.IsNotNull(result, "Service returned null CurrentData while a valid API response was supplied.");
             Assert.IsNotNull(apiResult.Current, $"{nameof(WeatherApiCurrent)} is null and it shouldn't be.");
@@ -314,8 +324,7 @@ namespace ID.WeatherDashboard.APITests.Services
         [TestMethod]
         public async Task GetAlertDataAsync_ShouldRequestCorrectUrlAndMapData()
         {
-            var apiKey = TestHelpers.RandomString(8, TestHelpers.Digits);
-            service.SetServiceConfig(new WeatherApiConfig { ApiKey = apiKey, Name = "WA" });
+            var config = SetConfig();
             var location = new Location("AlertTown");
 
             var apiResult = GenerateAlertApi();
@@ -325,8 +334,9 @@ namespace ID.WeatherDashboard.APITests.Services
                 .ReturnsAsync(apiResult);
 
             var result = await service.GetAlertDataAsync(location);
+            jsonQuery.Verify(j => j.QueryAsync<WeatherApiAlertAPI>(It.IsAny<string>(), It.IsAny<Tuple<string, string>[]>()));
 
-            var expectedUrl = $"{WeatherAPIService._alertUrl}?key={apiKey}&q={location}";
+            var expectedUrl = $"{WeatherAPIService._alertUrl}?key={config.ApiKey}&q={location}";
             Assert.AreEqual(expectedUrl, url, $"Alert URL mismatch. Expected {expectedUrl} but got {url}.");
             Assert.IsNotNull(result, "AlertData should not be null when API returns alerts.");
             Assert.AreEqual(apiResult.Alerts!.Alerts[0].Headline, result!.Alerts.First().Headline, "Alert headline mapping incorrect.");

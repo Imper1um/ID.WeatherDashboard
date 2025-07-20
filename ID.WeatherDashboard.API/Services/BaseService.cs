@@ -18,8 +18,8 @@ namespace ID.WeatherDashboard.API.Services
 
         private List<DateTimeOffset> Calls { get; } = new List<DateTimeOffset>();
 
-        public bool IsOverloaded => Calls.Count(c => c > DateTimeOffset.Now.AddMinutes(-60)) < (Config?.MaxCallsPerHour ?? 0)
-            && Calls.Count(c => c > DateTimeOffset.Now.AddHours(-24)) < (Config?.MaxCallsPerDay ?? 0);
+        public bool IsOverloaded => Calls.Count(c => c > DateTimeOffset.Now.AddMinutes(-60)) > (Config?.MaxCallsPerHour ?? 0)
+            && Calls.Count(c => c > DateTimeOffset.Now.AddHours(-24)) > (Config?.MaxCallsPerDay ?? 0);
 
         protected bool TryCall()
         {
