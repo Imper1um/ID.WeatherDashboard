@@ -2,6 +2,7 @@
 using ID.WeatherDashboard.API.Config;
 using ID.WeatherDashboard.API.Data;
 using ID.WeatherDashboard.API.Services;
+using MoonPhaseEnum = ID.WeatherDashboard.API.Data.MoonPhase;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -51,7 +52,7 @@ namespace ID.WeatherDashboard.APITests.Services
             Precipitation? rainRate = null,
             Precipitation? snowRate = null,
             float? cloudCoverPercentage = null,
-            MoonPhase? moonPhase = null,
+            MoonPhaseEnum? moonPhase = null,
             WindSpeed? windGustSpeed = null,
             WindSpeed? windSpeed = null,
             Distance? visibility = null,
@@ -101,7 +102,7 @@ namespace ID.WeatherDashboard.APITests.Services
             Precipitation? rainRate = null,
             Precipitation? snowRate = null,
             float? cloudCoverPercentage = null,
-            MoonPhase? moonPhase = null,
+            MoonPhaseEnum? moonPhase = null,
             WindSpeed? windGustSpeed = null,
             WindSpeed? windSpeed = null,
             Distance? visibility = null,
@@ -125,7 +126,7 @@ namespace ID.WeatherDashboard.APITests.Services
                 rainRate: rainRate ?? new Precipitation(TestHelpers.RandomFloatBetween(0, 2), PrecipitationEnum.Inches),
                 snowRate: snowRate ?? new Precipitation(TestHelpers.RandomFloatBetween(0, 2), PrecipitationEnum.Inches),
                 cloudCoverPercentage: cloudCoverPercentage ?? TestHelpers.RandomFloatBetween(0, 1),
-                moonPhase: moonPhase ?? TestHelpers.RandomEnumValue<MoonPhase>(),
+                moonPhase: moonPhase ?? TestHelpers.RandomEnumValue<MoonPhaseEnum>(),
                 windGustSpeed: windGustSpeed ?? new WindSpeed(TestHelpers.RandomFloatBetween(0, 50), WindSpeedEnum.MilesPerHour),
                 windSpeed: windSpeed ?? new WindSpeed(TestHelpers.RandomFloatBetween(0, 30), WindSpeedEnum.MilesPerHour),
                 visibility: visibility ?? new Distance(TestHelpers.RandomFloatBetween(0, 10), DistanceEnum.Miles),

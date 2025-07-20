@@ -5,6 +5,10 @@ namespace ID.WeatherDashboard.MoonPhase.Data
 {
     public class MoonPhaseAdvancedAPI : MoonPhaseStamped
     {
+        public MoonPhaseAdvancedAPI()
+        {
+        }
+
         public MoonPhaseAdvancedAPI(DateTime forDateTime, DateTimeOffset? pulled = null)
         {
             For = forDateTime;

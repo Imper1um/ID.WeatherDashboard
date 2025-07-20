@@ -4,6 +4,7 @@ using ID.WeatherDashboard.API.Services;
 using Moq;
 using System.Reflection;
 using System.Text.Json;
+using MoonPhaseEnum = ID.WeatherDashboard.API.Data.MoonPhase;
 
 namespace ID.WeatherDashboard.APITests.Services
 {
@@ -25,7 +26,7 @@ namespace ID.WeatherDashboard.APITests.Services
             double? longitude = null,
             DateTimeOffset? moonrise = null,
             DateTimeOffset? moonset = null,
-            MoonPhase? moonPhase = null,
+            MoonPhaseEnum? moonPhase = null,
             MoonProperty? moonDeclination = null,
             MoonProperty? moonAzimuth = null,
             MoonProperty? moonParallacticAngle = null,
@@ -41,7 +42,7 @@ namespace ID.WeatherDashboard.APITests.Services
             var rise = moonrise ?? RandomTimeBetween(start, end.AddHours(-20));
             var set = moonset ?? RandomTimeBetween(rise, end);
 
-            var phase = moonPhase ?? TestHelpers.RandomEnumValue<MoonPhase>();
+            var phase = moonPhase ?? TestHelpers.RandomEnumValue<MoonPhaseEnum>();
 
             var declination = moonDeclination ?? new MoonProperty(Random.Shared.NextDouble() * 360 - 180, RandomTimeBetween(start, end));
             var azimuth = moonAzimuth ?? new MoonProperty(Random.Shared.NextDouble() * 360, RandomTimeBetween(start, end));
@@ -67,7 +68,7 @@ namespace ID.WeatherDashboard.APITests.Services
         }
 
 
-        private MoonData GenerateMoonData(DateTimeOffset? pulled = null, string[]? sources = null, DateTime? forDatetime = null, double? latitude = null, double? longitude = null, DateTimeOffset? moonrise = null, DateTimeOffset? moonset = null, MoonPhase? moonPhase = null, 
+        private MoonData GenerateMoonData(DateTimeOffset? pulled = null, string[]? sources = null, DateTime? forDatetime = null, double? latitude = null, double? longitude = null, DateTimeOffset? moonrise = null, DateTimeOffset? moonset = null, MoonPhaseEnum? moonPhase = null,
             MoonProperty? moonDeclination = null, MoonProperty? moonAzimuth = null, MoonProperty? moonParallacticAngle = null, MoonProperty? moonDistance = null, MoonProperty? moonAltitude = null)
         {
             return new MoonData(pulled ?? DateTimeOffset.Now, sources ?? Array.Empty<string>())
@@ -518,8 +519,8 @@ namespace ID.WeatherDashboard.APITests.Services
 
             var commonDate = DateTime.Today;
 
-            var moonData1 = GenerateFullyFormedMoonData(forDatetime: commonDate, moonPhase: MoonPhase.FullMoon);
-            var moonData2 = GenerateFullyFormedMoonData(forDatetime: commonDate, moonPhase: MoonPhase.NewMoon);
+            var moonData1 = GenerateFullyFormedMoonData(forDatetime: commonDate, moonPhase: MoonPhaseEnum.FullMoon);
+            var moonData2 = GenerateFullyFormedMoonData(forDatetime: commonDate, moonPhase: MoonPhaseEnum.NewMoon);
 
             var sunLine1 = GenerateSunLine(forDatetime: commonDate, moonData: moonData1);
             var sunLine2 = GenerateSunLine(forDatetime: commonDate, moonData: moonData2);
@@ -544,7 +545,7 @@ namespace ID.WeatherDashboard.APITests.Services
             Assert.IsNotNull(result, "Expected SunData to be returned.");
             var moonData = result.Lines.First(l => l.For.Date == commonDate).MoonData;
             Assert.IsNotNull(moonData, "Expected MoonData to be present after overlay.");
-            Assert.IsTrue(Enum.IsDefined(typeof(MoonPhase), moonData.MoonPhase), "Expected MoonPhase to be set after overlay.");
+            Assert.IsTrue(Enum.IsDefined(typeof(MoonPhaseEnum), moonData.MoonPhase), "Expected MoonPhase to be set after overlay.");
             Assert.AreEqual(1, SunDataUpdated.Count, "Expected SunDataUpdated event to fire once.");
         }
 

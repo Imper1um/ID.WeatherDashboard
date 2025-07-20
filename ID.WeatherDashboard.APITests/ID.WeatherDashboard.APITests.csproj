@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ID.WeatherDashboard.API\ID.WeatherDashboard.API.csproj" />
+    <ProjectReference Include="..\ID.WeatherDashboard.MoonPhase\ID.WeatherDashboard.MoonPhase.csproj" />
   </ItemGroup>
 
   <ItemGroup>
