@@ -17,8 +17,11 @@
 */
 
 using System;
-
 using Avalonia;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Serilog;
 
 namespace ID.WeatherDashboard.Desktop;
 
@@ -28,14 +31,27 @@ class Program
     // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
     // yet and stuff might break.
     [STAThread]
-    public static void Main(string[] args) => BuildAvaloniaApp()
-        .StartWithClassicDesktopLifetime(args);
+    public static void Main(string[] args)
+    {
+        using IHost host = Host.CreateDefaultBuilder(args)
+            .ConfigureAppConfiguration(c =>
+            {
+                var env = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") ?? "Production";
+                c.AddJsonFile("serilog.json")
+                 .AddJsonFile($"serilog.{env}.json", true);
+            })
+            .UseSerilog((ctx, cfg) => cfg.ReadFrom.Configuration(ctx.Configuration))
+            .ConfigureServices(s => s.AddLogging())
+            .Build();
+
+        BuildAvaloniaApp()
+            .StartWithClassicDesktopLifetime(args);
+    }
 
     // Avalonia configuration, don't remove; also used by visual designer.
-    public static AppBuilder BuildAvaloniaApp()
-        => AppBuilder.Configure<App>()
+    public static AppBuilder BuildAvaloniaApp() =>
+        AppBuilder.Configure<App>()
             .UsePlatformDetect()
-            .WithInterFont()
-            .LogToTrace();
+            .WithInterFont();
 
 }

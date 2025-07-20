@@ -4,11 +4,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace ID.WeatherDashboard.API.Services
 {
     public abstract class BaseService<T> where T : ServiceConfig
     {
+        protected BaseService(ILogger? logger = null)
+        {
+            Logger = logger ?? NullLogger.Instance;
+        }
+
+        protected ILogger Logger { get; }
+
         protected abstract string BaseServiceName { get; }
 
         public T? Config { get; set; }
@@ -25,8 +34,7 @@ namespace ID.WeatherDashboard.API.Services
         {
             if (IsOverloaded)
             {
-                //TODO: Install serilog and convert this to Serilog.
-                Console.WriteLine($"{GetType().Name} is overloaded! Blocked Call.");
+                Logger.LogWarning("{Service} is overloaded! Blocked Call.", GetType().Name);
                 return false;
             }
             Calls.Add(DateTimeOffset.Now);

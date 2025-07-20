@@ -3,10 +3,11 @@ using ID.WeatherDashboard.API.Config;
 using ID.WeatherDashboard.API.Data;
 using ID.WeatherDashboard.API.Services;
 using ID.WeatherDashboard.SunriseSunset.Data;
+using Microsoft.Extensions.Logging;
 
 namespace ID.WeatherDashboard.SunriseSunset.Services
 {
-    public class SunriseSunsetService(IJsonQueryService jsonQueryService) : BaseService<SunriseSunsetApiConfig>, ISunDataService
+    public class SunriseSunsetService(IJsonQueryService jsonQueryService, ILogger<SunriseSunsetService>? logger = null) : BaseService<SunriseSunsetApiConfig>(logger), ISunDataService
     {
         public const string DefaultServiceName = "SunriseSunset";
         public const string _serviceUrl = "https://api.sunrise-sunset.org/json";
