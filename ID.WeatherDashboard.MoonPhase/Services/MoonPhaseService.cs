@@ -2,7 +2,6 @@
 using ID.WeatherDashboard.API.Data;
 using ID.WeatherDashboard.API.Services;
 using ID.WeatherDashboard.MoonPhase.Data;
-using System.Text.Json;
 using Microsoft.Extensions.Logging;
 
 namespace ID.WeatherDashboard.MoonPhase.Services
