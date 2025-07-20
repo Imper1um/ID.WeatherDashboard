@@ -4,14 +4,9 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace ID.WeatherDashboard.API.Services
 {
-    public abstract class BaseService<T> where T : ServiceConfig
+    public abstract class BaseService<T>(ILogger<BaseService<T>>? logger = null) where T : ServiceConfig
     {
-        protected BaseService(ILogger? logger = null)
-        {
-            Logger = logger ?? NullLogger.Instance;
-        }
-
-        protected ILogger Logger { get; }
+        protected ILogger<BaseService<T>> Logger { get; } = logger ?? NullLogger<BaseService<T>>.Instance;
 
         protected abstract string BaseServiceName { get; }
 
