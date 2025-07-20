@@ -33,9 +33,16 @@ namespace ID.WeatherDashboard.MoonPhase.Services
                 if (!TryCall()) continue;
                 var url = $"{_advancedUrl}?lat={lat}&lon={lon}&date={d:yyyy-MM-dd}";
 
-                var sunData = (await JsonQueryService.QueryAsync<MoonPhaseAdvancedAPI>(url, [.. headers]))?.ToSunData(d.Date);
-                if (sunData != null)
-                    sunDatas.Add(sunData);
+                try
+                {
+                    var sunData = (await JsonQueryService.QueryAsync<MoonPhaseAdvancedAPI>(url, [.. headers]))?.ToSunData(d.Date);
+                    if (sunData != null)
+                        sunDatas.Add(sunData);
+                } 
+                catch (Exception ex)
+                {
+                    //TODO: Log this.
+                }
             }
             return new SunData(DateTimeOffset.Now, [.. sunDatas.SelectMany(sd => sd.Lines)]);
         }

@@ -5,16 +5,16 @@ namespace ID.WeatherDashboard.MoonPhase.Data
     public class MoonPhaseSun
     {
         [JsonPropertyName("sunrise")]
-        public long? Sunrise { get; set; }
+        public string? Sunrise { get; set; }
 
         [JsonPropertyName("sunrise_timestamp")]
-        public string? SunriseTimestamp { get; set; }
+        public long? SunriseTimestamp { get; set; }
 
         [JsonPropertyName("sunset")]
-        public long? Sunset { get; set; }
+        public string? Sunset { get; set; }
 
         [JsonPropertyName("sunset_timestamp")]
-        public string? SunsetTimestamp { get; set; }
+        public long? SunsetTimestamp { get; set; }
 
         [JsonPropertyName("solar_noon")]
         public string? SolarNoon { get; set; }

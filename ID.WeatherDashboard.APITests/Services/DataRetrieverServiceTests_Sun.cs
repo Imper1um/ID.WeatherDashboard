@@ -24,7 +24,7 @@ namespace ID.WeatherDashboard.APITests.Services
             double? longitude = null,
             DateTimeOffset? moonrise = null,
             DateTimeOffset? moonset = null,
-            MoonPhase? moonPhase = null,
+            API.Data.MoonPhase? moonPhase = null,
             MoonProperty? moonDeclination = null,
             MoonProperty? moonAzimuth = null,
             MoonProperty? moonParallacticAngle = null,
@@ -35,18 +35,18 @@ namespace ID.WeatherDashboard.APITests.Services
             var start = new DateTimeOffset(forDatetime ?? DateTime.Today, now.Offset);
             var end = start.AddHours(24);
 
-            var lat = latitude ?? (Random.Shared.NextDouble() * 180) - 90;
-            var lon = longitude ?? (Random.Shared.NextDouble() * 360) - 180;
+            var lat = latitude ?? TestHelpers.RandomLatitude();
+            var lon = longitude ?? TestHelpers.RandomLongitude();
             var rise = moonrise ?? RandomTimeBetween(start, end.AddHours(-20));
             var set = moonset ?? RandomTimeBetween(rise, end);
 
-            var phase = moonPhase ?? TestHelpers.RandomEnumValue<MoonPhase>();
+            var phase = moonPhase ?? TestHelpers.RandomEnumValue<API.Data.MoonPhase>();
 
-            var declination = moonDeclination ?? new MoonProperty(Random.Shared.NextDouble() * 360 - 180, RandomTimeBetween(start, end));
-            var azimuth = moonAzimuth ?? new MoonProperty(Random.Shared.NextDouble() * 360, RandomTimeBetween(start, end));
-            var parallactic = moonParallacticAngle ?? new MoonProperty(Random.Shared.NextDouble() * 360, RandomTimeBetween(start, end));
-            var distance = moonDistance ?? new MoonProperty(Random.Shared.NextDouble() * 500000 + 100000, RandomTimeBetween(start, end)); // 100,000 km to 600,000 km
-            var altitude = moonAltitude ?? new MoonProperty(Random.Shared.NextDouble() * 180 - 90, RandomTimeBetween(start, end));
+            var declination = moonDeclination ?? new MoonProperty(TestHelpers.RandomDeclination(), RandomTimeBetween(start, end));
+            var azimuth = moonAzimuth ?? new MoonProperty(TestHelpers.RandomAzimuth(), RandomTimeBetween(start, end));
+            var parallactic = moonParallacticAngle ?? new MoonProperty(TestHelpers.RandomParallacticAngle(), RandomTimeBetween(start, end));
+            var distance = moonDistance ?? new MoonProperty(TestHelpers.RandomMoonDistance(), RandomTimeBetween(start, end)); // 100,000 km to 600,000 km
+            var altitude = moonAltitude ?? new MoonProperty(TestHelpers.RandomMoonAltitude(), RandomTimeBetween(start, end));
 
             return GenerateMoonData(
                 pulled,
@@ -66,7 +66,7 @@ namespace ID.WeatherDashboard.APITests.Services
         }
 
 
-        private MoonData GenerateMoonData(DateTimeOffset? pulled = null, string[]? sources = null, DateTime? forDatetime = null, double? latitude = null, double? longitude = null, DateTimeOffset? moonrise = null, DateTimeOffset? moonset = null, MoonPhase? moonPhase = null, 
+        private MoonData GenerateMoonData(DateTimeOffset? pulled = null, string[]? sources = null, DateTime? forDatetime = null, double? latitude = null, double? longitude = null, DateTimeOffset? moonrise = null, DateTimeOffset? moonset = null, API.Data.MoonPhase? moonPhase = null, 
             MoonProperty? moonDeclination = null, MoonProperty? moonAzimuth = null, MoonProperty? moonParallacticAngle = null, MoonProperty? moonDistance = null, MoonProperty? moonAltitude = null)
         {
             return new MoonData(pulled ?? DateTimeOffset.Now, sources ?? Array.Empty<string>())
@@ -517,8 +517,8 @@ namespace ID.WeatherDashboard.APITests.Services
 
             var commonDate = DateTime.Today;
 
-            var moonData1 = GenerateFullyFormedMoonData(forDatetime: commonDate, moonPhase: MoonPhase.FullMoon);
-            var moonData2 = GenerateFullyFormedMoonData(forDatetime: commonDate, moonPhase: MoonPhase.NewMoon);
+            var moonData1 = GenerateFullyFormedMoonData(forDatetime: commonDate, moonPhase: API.Data.MoonPhase.FullMoon);
+            var moonData2 = GenerateFullyFormedMoonData(forDatetime: commonDate, moonPhase: API.Data.MoonPhase.NewMoon);
 
             var sunLine1 = GenerateSunLine(forDatetime: commonDate, moonData: moonData1);
             var sunLine2 = GenerateSunLine(forDatetime: commonDate, moonData: moonData2);
@@ -544,7 +544,7 @@ namespace ID.WeatherDashboard.APITests.Services
             var moonData = result.Lines.First(l => l.For.Date == commonDate).MoonData;
             Assert.IsNotNull(moonData, "Expected MoonData to be present after overlay.");
             Assert.IsNotNull(moonData.MoonPhase);
-            Assert.IsTrue(Enum.IsDefined(typeof(MoonPhase), moonData.MoonPhase), "Expected MoonPhase to be set after overlay.");
+            Assert.IsTrue(Enum.IsDefined(typeof(API.Data.MoonPhase), moonData.MoonPhase), "Expected MoonPhase to be set after overlay.");
             Assert.AreEqual(1, SunDataUpdated.Count, "Expected SunDataUpdated event to fire once.");
         }
 

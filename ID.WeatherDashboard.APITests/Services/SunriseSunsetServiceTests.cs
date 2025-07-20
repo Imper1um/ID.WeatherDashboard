@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -9,6 +9,7 @@ using ID.WeatherDashboard.SunriseSunset.Services;
 using GeoTimeZone;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
+using ID.WeatherDashboard.API.Config;
 
 namespace ID.WeatherDashboard.APITests.Services
 {
@@ -44,12 +45,14 @@ namespace ID.WeatherDashboard.APITests.Services
                 .ReturnsAsync(result1)
                 .ReturnsAsync(result2)
                 .ReturnsAsync(result3);
+            service.SetServiceConfig(new SunriseSunsetApiConfig() { Name = TestHelpers.RandomName(), MaxCallsPerDay = 100, MaxCallsPerHour = 100 });
 
             var location = new Location("NY") { Latitude = 40.7128, Longitude = -74.0060 };
             var tzid = TimeZoneLookup.GetTimeZone(location.Latitude!.Value, location.Longitude!.Value).Result;
             var expectedUrl = $"{SunriseSunsetService._serviceUrl}?lat={location.Latitude.Value:F6}&lng={location.Longitude.Value:F6}&formatted=0&date={from:yyyy-MM-dd}&timezone={tzid}";
 
             var data = await service.GetSunDataAsync(location, from, to);
+            jsonQueryService.Verify(j => j.QueryAsync<SunriseSunsetApiResult>(expectedUrl, It.IsAny<Tuple<string, string>[]>()), Times.Exactly(3));
 
             Assert.IsNotNull(data);
             Assert.AreEqual(3, data.Lines.Count());
@@ -57,7 +60,6 @@ namespace ID.WeatherDashboard.APITests.Services
             Assert.AreEqual(result1.Pulled, lines[0].Pulled);
             Assert.AreEqual(result2.Pulled, lines[1].Pulled);
             Assert.AreEqual(result3.Pulled, lines[2].Pulled);
-            jsonQueryService.Verify(j => j.QueryAsync<SunriseSunsetApiResult>(expectedUrl, It.IsAny<Tuple<string, string>[]>()), Times.Exactly(3));
         }
 
         [TestMethod]
