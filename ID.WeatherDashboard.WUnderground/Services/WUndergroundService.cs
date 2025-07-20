@@ -2,10 +2,11 @@
 using ID.WeatherDashboard.API.Data;
 using ID.WeatherDashboard.API.Services;
 using ID.WeatherDashboard.WUnderground.Data;
+using Microsoft.Extensions.Logging;
 
 namespace ID.WeatherDashboard.WUnderground.Services
 {
-    public class WUndergroundService(IJsonQueryService jsonQueryService) : BaseKeyedService<WUndergroundApiConfig>, ICurrentQueryService, IHistoryQueryService
+    public class WUndergroundService(IJsonQueryService jsonQueryService, ILogger<WUndergroundService>? logger = null) : BaseKeyedService<WUndergroundApiConfig>(logger), ICurrentQueryService, IHistoryQueryService
     {
         public const string DefaultServiceName = "WUnderground";
         public const string _historyUrl = "https://api.weather.com/v2/pws/history/all";

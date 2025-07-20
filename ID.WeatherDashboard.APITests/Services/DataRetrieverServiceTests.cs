@@ -1,4 +1,5 @@
-﻿using ID.WeatherDashboard.API.Codes;
+﻿using Castle.Core.Logging;
+using ID.WeatherDashboard.API.Codes;
 using ID.WeatherDashboard.API.Config;
 using ID.WeatherDashboard.API.Data;
 using ID.WeatherDashboard.API.Services;

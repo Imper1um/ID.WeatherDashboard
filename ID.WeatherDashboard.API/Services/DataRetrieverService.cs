@@ -1,39 +1,33 @@
 ﻿using ID.WeatherDashboard.API.Codes;
 using ID.WeatherDashboard.API.Config;
 using ID.WeatherDashboard.API.Data;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using System.Text.RegularExpressions;
 
 namespace ID.WeatherDashboard.API.Services
 {
-    public class DataRetrieverService : IDataRetrieverService
+    public class DataRetrieverService(IEnumerable<ICurrentQueryService> currentQueryServices,
+        IEnumerable<IForecastQueryService> forecastQueryServices,
+        IEnumerable<IHistoryQueryService> historyQueryServices,
+        IEnumerable<ISunDataService> sunDataServices,
+        IEnumerable<IAlertQueryService> alertQueryServices,
+        IConfigManager configManager,
+        ILogger<DataRetrieverService>? logger = null) : IDataRetrieverService
     {
-        public DataRetrieverService(IEnumerable<ICurrentQueryService> currentQueryServices, 
-            IEnumerable<IForecastQueryService> forecastQueryServices, 
-            IEnumerable<IHistoryQueryService> historyQueryServices, 
-            IEnumerable<ISunDataService> sunDataServices,
-            IEnumerable<IAlertQueryService> alertQueryServices,
-            IConfigManager configManager)
-        {
-            CurrentQueryServices = currentQueryServices;
-            ForecastQueryServices = forecastQueryServices;
-            HistoryQueryServices = historyQueryServices;
-            SunDataServices = sunDataServices;
-            AlertQueryServices = alertQueryServices;
-            ConfigManager = configManager;
-        }
+        private IEnumerable<ICurrentQueryService> CurrentQueryServices { get; } = currentQueryServices;
+        private IEnumerable<IForecastQueryService> ForecastQueryServices { get; } = forecastQueryServices;
+        private IEnumerable<IHistoryQueryService> HistoryQueryServices { get; } = historyQueryServices;
+        private IEnumerable<ISunDataService> SunDataServices { get; } = sunDataServices;
+        private IEnumerable<IAlertQueryService> AlertQueryServices { get; } = alertQueryServices;
+        private IConfigManager ConfigManager { get; } = configManager;
+        private ILogger<DataRetrieverService> Log { get; } = logger ?? NullLogger<DataRetrieverService>.Instance;
 
-        private IEnumerable<ICurrentQueryService> CurrentQueryServices { get; }
-        private IEnumerable<IForecastQueryService> ForecastQueryServices { get; }
-        private IEnumerable<IHistoryQueryService> HistoryQueryServices { get; }
-        private IEnumerable<ISunDataService> SunDataServices { get; }
-        private IEnumerable<IAlertQueryService> AlertQueryServices { get; }
-        private IConfigManager ConfigManager { get; }
-
-        private Dictionary<Location, CurrentData> _currentDataCache = new Dictionary<Location, CurrentData>();
-        private Dictionary<Location, ForecastData> _forecastDataCache = new Dictionary<Location, ForecastData>();
-        private Dictionary<Location, HistoryData> _historyDataCache = new Dictionary<Location, HistoryData>();
-        private Dictionary<Location, SunData> _sunDataCache = new Dictionary<Location, SunData>();
-        private Dictionary<Location, AlertData> _alertDataCache = new Dictionary<Location, AlertData>();
+        private readonly Dictionary<Location, CurrentData> _currentDataCache = [];
+        private readonly Dictionary<Location, ForecastData> _forecastDataCache = [];
+        private readonly Dictionary<Location, HistoryData> _historyDataCache = [];
+        private readonly Dictionary<Location, SunData> _sunDataCache = [];
+        private readonly Dictionary<Location, AlertData> _alertDataCache = [];
 
         public event EventHandler<DataUpdatedEventArgs>? CurrentDataUpdated;
         public event EventHandler<DataUpdatedEventArgs>? ForecastDataUpdated;
@@ -43,26 +37,31 @@ namespace ID.WeatherDashboard.API.Services
 
         protected virtual void OnCurrentDataUpdated(Location location)
         {
+            Log.LogTrace($"{nameof(OnCurrentDataUpdated)}");
             CurrentDataUpdated?.Invoke(this, new DataUpdatedEventArgs(location));
         }
 
         protected virtual void OnForecastDataUpdated(Location location)
         {
+            Log.LogTrace($"{nameof(OnForecastDataUpdated)}");
             ForecastDataUpdated?.Invoke(this, new DataUpdatedEventArgs(location));
         }
 
         protected virtual void OnHistoryDataUpdated(Location location)
         {
+            Log.LogTrace($"{nameof(OnHistoryDataUpdated)}");
             HistoryDataUpdated?.Invoke(this, new DataUpdatedEventArgs(location));
         }
 
         protected virtual void OnSunDataUpdated(Location location)
         {
+            Log.LogTrace($"{nameof(OnSunDataUpdated)}");
             SunDataUpdated?.Invoke(this, new DataUpdatedEventArgs(location));
         }
 
         protected virtual void OnAlertDataUpdated(Location location)
         {
+            Log.LogTrace($"{nameof(OnAlertDataUpdated)}");
             AlertDataUpdated?.Invoke(this, new DataUpdatedEventArgs(location));
         }
 
@@ -131,6 +130,7 @@ namespace ID.WeatherDashboard.API.Services
             var serviceQueries = new Dictionary<string, CurrentData>();
             if (!servicesToQuery.Any())
             {
+                Log.LogWarning($"There are no Services that are setup to provide {nameof(CurrentData)}. This is normally caused by that there is no Elements for {nameof(CurrentData)}. Check the configuration.");
                 throw new InvalidOperationException("No services to query for CurrentData mentioned in the Elements. Please check the configuration.");
             }
             foreach (var s in servicesToQuery)

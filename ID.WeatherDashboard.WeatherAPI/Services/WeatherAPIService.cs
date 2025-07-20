@@ -3,10 +3,11 @@ using ID.WeatherDashboard.API.Data;
 using ID.WeatherDashboard.API.Services;
 using ID.WeatherDashboard.WeatherAPI.Data;
 using System.Text.Json;
+using Microsoft.Extensions.Logging;
 
 namespace ID.WeatherDashboard.WeatherAPI.Services
 {
-    public class WeatherAPIService(IJsonQueryService jsonQueryService) : BaseKeyedService<WeatherApiConfig>, IForecastQueryService, ICurrentQueryService, IHistoryQueryService, ISunDataService, IAlertQueryService
+    public class WeatherAPIService(IJsonQueryService jsonQueryService, ILogger<WeatherAPIService>? logger = null) : BaseKeyedService<WeatherApiConfig>(logger), IForecastQueryService, ICurrentQueryService, IHistoryQueryService, ISunDataService, IAlertQueryService
     {
         private IJsonQueryService JsonQueryService { get; } = jsonQueryService;
         public const string _ServiceName = "WeatherAPI";

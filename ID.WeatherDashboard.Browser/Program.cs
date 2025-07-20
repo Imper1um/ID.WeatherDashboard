@@ -16,20 +16,37 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+using System;
 using System.Runtime.Versioning;
 using System.Threading.Tasks;
-
 using Avalonia;
 using Avalonia.Browser;
-
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Serilog;
 using ID.WeatherDashboard;
 
 internal sealed partial class Program
 {
-    private static Task Main(string[] args) => BuildAvaloniaApp()
+    private static async Task Main(string[] args)
+    {
+        using IHost host = Host.CreateDefaultBuilder(args)
+            .ConfigureAppConfiguration(c =>
+            {
+                var env = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") ?? "Production";
+                c.AddJsonFile("serilog.json")
+                 .AddJsonFile($"serilog.{env}.json", true);
+            })
+            .UseSerilog((ctx, cfg) => cfg.ReadFrom.Configuration(ctx.Configuration))
+            .ConfigureServices(s => s.AddLogging())
+            .Build();
+
+        await BuildAvaloniaApp()
             .WithInterFont()
             .StartBrowserAppAsync("out");
+    }
 
-    public static AppBuilder BuildAvaloniaApp()
-        => AppBuilder.Configure<App>();
+    public static AppBuilder BuildAvaloniaApp() =>
+        AppBuilder.Configure<App>();
 }

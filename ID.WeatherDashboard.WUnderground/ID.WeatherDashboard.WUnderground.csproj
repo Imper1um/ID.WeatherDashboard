@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ID.WeatherDashboard.API\ID.WeatherDashboard.API.csproj" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.2" />
   </ItemGroup>
 
 </Project>

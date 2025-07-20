@@ -2,11 +2,11 @@
 using ID.WeatherDashboard.API.Data;
 using ID.WeatherDashboard.API.Services;
 using ID.WeatherDashboard.MoonPhase.Data;
-using System.Text.Json;
+using Microsoft.Extensions.Logging;
 
 namespace ID.WeatherDashboard.MoonPhase.Services
 {
-    public class MoonPhaseService(IJsonQueryService jsonQueryService) : BaseKeyedService<MoonPhaseConfig>, ISunDataService
+    public class MoonPhaseService(IJsonQueryService jsonQueryService, ILogger<MoonPhaseService>? logger = null) : BaseKeyedService<MoonPhaseConfig>(logger), ISunDataService
     {
         private IJsonQueryService JsonQueryService { get; } = jsonQueryService;
         public const string _ServiceName = "MoonPhase";
