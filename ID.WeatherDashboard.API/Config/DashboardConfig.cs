@@ -14,5 +14,6 @@ namespace ID.WeatherDashboard.API.Config
         public DataConfig ForecastData { get; set; } = new DataConfig();
         public DataConfig SunData { get; set; } = new DataConfig();
         public DataConfig AlertData { get; set; } = new DataConfig();
+        public ChatGptConfig ChatGpt { get; set; } = new() { ApiKey = string.Empty, Model = "gpt-4o" };
     }
 }
