@@ -66,8 +66,8 @@ namespace ID.WeatherDashboard.MoonPhase.Data
                 new SunLine(Pulled, "MoonPhase")
                 {
                     For = forDateTime.Date,
-                    Sunrise = Sun?.Sunrise != null ? DateTimeOffset.FromUnixTimeSeconds(Sun.Sunrise.Value) : null,
-                    Sunset = Sun?.Sunset != null ? DateTimeOffset.FromUnixTimeSeconds(Sun.Sunset.Value) : null,
+                    Sunrise = Sun?.SunriseTimestamp != null ? DateTimeOffset.FromUnixTimeSeconds(Sun.SunriseTimestamp.Value) : null,
+                    Sunset = Sun?.SunsetTimestamp != null ? DateTimeOffset.FromUnixTimeSeconds(Sun.SunsetTimestamp.Value) : null,
                     SolarNoon = Sun?.SolarNoon != null ? ParseTime(Sun.SolarNoon, forDateTime.Date) : null,
                     Latitude = Location.Latitude,
                     MoonData = ToMoonData()

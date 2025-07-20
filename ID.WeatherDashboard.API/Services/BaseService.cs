@@ -18,12 +18,17 @@ namespace ID.WeatherDashboard.API.Services
 
         private List<DateTimeOffset> Calls { get; } = new List<DateTimeOffset>();
 
-        public bool IsOverloaded => Calls.Count(c => c > DateTimeOffset.Now.AddMinutes(-60)) < (Config?.MaxCallsPerHour ?? 0)
-            && Calls.Count(c => c > DateTimeOffset.Now.AddHours(-24)) < (Config?.MaxCallsPerDay ?? 0);
+        public bool IsOverloaded => Calls.Count(c => c > DateTimeOffset.Now.AddMinutes(-60)) >= (Config?.MaxCallsPerHour ?? 0)
+            && Calls.Count(c => c > DateTimeOffset.Now.AddHours(-24)) >= (Config?.MaxCallsPerDay ?? 0);
 
         protected bool TryCall()
         {
-            if (IsOverloaded) return false;
+            if (IsOverloaded)
+            {
+                //TODO: Install serilog and convert this to Serilog.
+                Console.WriteLine($"{GetType().Name} is overloaded! Blocked Call.");
+                return false;
+            }
             Calls.Add(DateTimeOffset.Now);
             Calls.RemoveAll(c => c < DateTimeOffset.Now.AddHours(-24));
             return true;

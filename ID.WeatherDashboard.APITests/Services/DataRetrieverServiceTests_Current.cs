@@ -3,11 +3,6 @@ using ID.WeatherDashboard.API.Config;
 using ID.WeatherDashboard.API.Data;
 using ID.WeatherDashboard.API.Services;
 using Moq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Text.Json;
 
 namespace ID.WeatherDashboard.APITests.Services

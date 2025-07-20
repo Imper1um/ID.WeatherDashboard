@@ -1,13 +1,8 @@
+﻿using ID.WeatherDashboard.API.Codes;
+using ID.WeatherDashboard.API.Config;
 using ID.WeatherDashboard.API.Data;
 using ID.WeatherDashboard.API.Services;
-using ID.WeatherDashboard.API.Config;
-using ID.WeatherDashboard.API.Codes;
 using Moq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace ID.WeatherDashboard.APITests.Services
 {

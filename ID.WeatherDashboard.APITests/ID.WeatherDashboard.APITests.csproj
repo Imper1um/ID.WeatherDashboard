@@ -15,6 +15,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ID.WeatherDashboard.API\ID.WeatherDashboard.API.csproj" />
+    <ProjectReference Include="..\ID.WeatherDashboard.MoonPhase\ID.WeatherDashboard.MoonPhase.csproj" />
+    <ProjectReference Include="..\ID.WeatherDashboard.SunriseSunset\ID.WeatherDashboard.SunriseSunset.csproj" />
+    <ProjectReference Include="..\ID.WeatherDashboard.WUnderground\ID.WeatherDashboard.WUnderground.csproj" />
+    <ProjectReference Include="..\ID.WeatherDashboard.WeatherAPI\ID.WeatherDashboard.WeatherAPI.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -32,6 +32,16 @@
             return result.ToString();
         }
 
+        public static string RandomName(int length = 8)
+        {
+            return RandomString(8, UppercaseLetters, LowercaseLetters);
+        }
+
+        public static string RandomKey(int length = 8)
+        {
+            return RandomString(8, Digits, "ABCDEF".ToCharArray());
+        }
+
         public static T RandomEnumValue<T>() where T : Enum
         {
             var values = Enum.GetValues(typeof(T));
@@ -41,6 +51,46 @@
         public static double RandomDoubleBetween(double minValue, double maxValue)
         {
             return minValue + (Random.Shared.NextDouble() * (maxValue - minValue));
+        }
+
+        public static double RandomDeclination()
+        {
+            return RandomDoubleBetween(-180, 180);
+        }
+
+        public static double RandomAzimuth()
+        {
+            return RandomDoubleBetween(0, 360);
+        }
+
+        public static double RandomParallacticAngle()
+        {
+            return RandomDoubleBetween(0, 360);
+        }
+
+        public static double RandomMoonDistance()
+        {
+            return RandomDoubleBetween(100000, 600000);
+        }
+
+        public static double RandomSunDistance()
+        {
+            return RandomDoubleBetween(147.1 * 1000000, 152.1 * 1000000);
+        }
+
+        public static double RandomMoonAltitude()
+        {
+            return RandomDoubleBetween(-90, 90);
+        }
+
+        public static double RandomLatitude()
+        {
+            return RandomDoubleBetween(-90, 90);
+        }
+
+        public static double RandomLongitude()
+        {
+            return RandomDoubleBetween(-180, 180);
         }
 
         public static int RandomIntBetween(int minValue, int maxValue)

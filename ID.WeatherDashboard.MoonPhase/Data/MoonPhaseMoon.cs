@@ -17,7 +17,7 @@ namespace ID.WeatherDashboard.MoonPhase.Data
         public string? Illumination { get; set; }
 
         [JsonPropertyName("age_days")]
-        public int AgeDays { get; set; }
+        public int? AgeDays { get; set; }
 
         [JsonPropertyName("lunar_cycle")]
         public string? LunarCycle { get; set; }

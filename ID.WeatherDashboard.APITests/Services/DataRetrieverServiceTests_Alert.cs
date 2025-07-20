@@ -1,7 +1,7 @@
-﻿using ID.WeatherDashboard.API.Services;
-using Moq;
+﻿using ID.WeatherDashboard.API.Codes;
 using ID.WeatherDashboard.API.Data;
-using ID.WeatherDashboard.API.Codes;
+using ID.WeatherDashboard.API.Services;
+using Moq;
 using System.Text.Json;
 
 namespace ID.WeatherDashboard.APITests.Services
@@ -46,17 +46,17 @@ namespace ID.WeatherDashboard.APITests.Services
             {
                 Category = category ?? TestHelpers.RandomEnumValue<AlertCategoryEnum>(),
                 MessageType = messageType ?? AlertMessageTypeEnum.Alert,
-                Headline = headline ?? TestHelpers.RandomString(8, TestHelpers.UppercaseLetters, TestHelpers.LowercaseLetters),
-                Areas = areas ?? TestHelpers.RandomString(8, TestHelpers.UppercaseLetters, TestHelpers.LowercaseLetters),
+                Headline = headline ?? TestHelpers.RandomName(),
+                Areas = areas ?? TestHelpers.RandomName(),
                 Certainty = certainty ?? TestHelpers.RandomEnumValue<AlertCertaintyEnum>(),
-                Description = description ?? TestHelpers.RandomString(8, TestHelpers.UppercaseLetters, TestHelpers.LowercaseLetters),
+                Description = description ?? TestHelpers.RandomName(),
                 Effective = effective ?? DateTimeOffset.Now.AddMinutes(-1),
-                Event = eventName ?? TestHelpers.RandomString(8, TestHelpers.UppercaseLetters, TestHelpers.LowercaseLetters),
+                Event = eventName ?? TestHelpers.RandomName(),
                 Expires = expires ?? DateTimeOffset.Now.AddHours(1),
-                Instruction = instruction ?? TestHelpers.RandomString(8, TestHelpers.UppercaseLetters, TestHelpers.LowercaseLetters),
+                Instruction = instruction ?? TestHelpers.RandomName(),
                 Urgency = urgency ?? TestHelpers.RandomEnumValue<AlertUrgencyEnum>(),
                 Severity = severity ?? TestHelpers.RandomEnumValue<AlertSeverityEnum>(),
-                Note = note ?? TestHelpers.RandomString(8, TestHelpers.UppercaseLetters, TestHelpers.LowercaseLetters)
+                Note = note ?? TestHelpers.RandomName()
             };
         }
 
