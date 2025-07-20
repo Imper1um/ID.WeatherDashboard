@@ -1,4 +1,4 @@
-using ID.WeatherDashboard.API.Config;
+﻿using ID.WeatherDashboard.API.Config;
 using ID.WeatherDashboard.API.Data;
 using ID.WeatherDashboard.API.Services;
 using ID.WeatherDashboard.API.Codes;
@@ -6,6 +6,7 @@ using ID.WeatherDashboard.WeatherAPI.Data;
 using ID.WeatherDashboard.WeatherAPI.Services;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
+using Azure.Core.GeoJson;
 
 namespace ID.WeatherDashboard.APITests.Services
 {
@@ -161,6 +162,17 @@ namespace ID.WeatherDashboard.APITests.Services
                 }
             };
         }
+        private void CheckResult(float? apiResult, float? expectedResult, float delta, string name)
+        {
+            if (expectedResult == null)
+            {
+                Assert.IsNull(apiResult, $"API Result is not null for {name} and it should be.");
+                return;
+            }
+            Assert.IsNotNull(apiResult, $"API Result for {name} is null, and should not be.");
+            Assert.AreEqual(apiResult.Value, expectedResult.Value, delta, $"{name} has too much separation.");
+        }
+
         [TestMethod]
         public async Task GetCurrentDataAsync_ShouldRequestCorrectUrlAndMapData()
         {
@@ -181,13 +193,14 @@ namespace ID.WeatherDashboard.APITests.Services
             var expectedUrl = $"{WeatherAPIService._currentUrl}?key={apiKey}&q={location}";
             Assert.AreEqual(expectedUrl, requestedUrl, $"URL mismatch for location {location}. Expected {expectedUrl} but got {requestedUrl}.");
             Assert.IsNotNull(result, "Service returned null CurrentData while a valid API response was supplied.");
-            Assert.AreEqual(DateTimeOffset.FromUnixTimeSeconds(apiResult.Current!.LastUpdatedEpoch!.Value), result!.Observed, "Observed timestamp was not converted correctly.");
-            Assert.AreEqual(apiResult.Current.TempFahrenheit, result.CurrentTemperature!.To(TemperatureEnum.Fahrenheit), 0.001f, "Current temperature did not match Fahrenheit value from API.");
-            Assert.AreEqual(apiResult.Current.FeelsLikeFahrenheit, result.FeelsLike!.To(TemperatureEnum.Fahrenheit), 0.001f, "FeelsLike temperature mismatch.");
+            Assert.IsNotNull(apiResult.Current, $"{nameof(WeatherApiCurrent)} is null and it shouldn't be.");
+            Assert.IsNotNull(apiResult.Current.LastUpdatedEpoch, $"{nameof(WeatherApiCurrent.LastUpdatedEpoch)} is null and it shouldn't be.");
+            Assert.AreEqual(DateTimeOffset.FromUnixTimeSeconds(apiResult.Current.LastUpdatedEpoch.Value), result.Observed, "Observed timestamp was not converted correctly.");
+            CheckResult(apiResult.Current.TempFahrenheit, result.CurrentTemperature?.To(TemperatureEnum.Fahrenheit), 0.001f, nameof(WeatherApiCurrent.TempFahrenheit));
+            CheckResult(apiResult.Current.FeelsLikeFahrenheit, result.FeelsLike?.To(TemperatureEnum.Fahrenheit), 0.001f, nameof(WeatherApiCurrent.FeelsLikeFahrenheit));
             Assert.AreEqual(apiResult.Current.UvIndex, result.UVIndex, "UV index mismatch.");
-            Assert.AreEqual(apiResult.Current.PressureInches, result.Pressure!.To(PressureEnum.InchesOfMercury), 0.001f, "Pressure inches conversion incorrect.");
-            Assert.IsNotNull(result.WeatherConditions, "WeatherConditions should not be null when API returns condition data.");
-            Assert.AreEqual(apiResult.Current.WindMph, result.WeatherConditions!.WindSpeed!.To(WindSpeedEnum.MilesPerHour), 0.001f, "Wind speed mapping incorrect.");
+            CheckResult(apiResult.Current.PressureInches, result.Pressure?.To(PressureEnum.InchesOfMercury), 0.001f, nameof(WeatherApiCurrent.PressureInches));
+            CheckResult(apiResult.Current.WindMph, result.WeatherConditions?.WindSpeed?.To(WindSpeedEnum.MilesPerHour), 0.001f, nameof(WeatherConditions.WindSpeed));
         }
 
         [TestMethod]
@@ -223,9 +236,12 @@ namespace ID.WeatherDashboard.APITests.Services
             Assert.AreEqual(expectedUrl, url, $"Forecast URL mismatch. Expected {expectedUrl} but got {url}.");
             Assert.IsNotNull(result, "ForecastData should not be null when API provides data.");
             var day = result!.Days.First();
-            Assert.AreEqual(apiResult.Forecast!.ForecastDays![0].Day!.MaximumTemperatureFahrenheit, day.Daytime!.High!.To(TemperatureEnum.Fahrenheit), 0.001f, "Maximum temperature mapping incorrect.");
+            Assert.IsNotNull(apiResult.Forecast?.ForecastDays, $"{nameof(WeatherApiForecast.ForecastDays)} is null and it shouldn't be.");
+            Assert.AreEqual(1, apiResult.Forecast.ForecastDays.Count, $"{nameof(WeatherApiForecast.ForecastDays)} is empty and it shouldn't be.");
+            var forecastDay = apiResult.Forecast.ForecastDays.First();
+            CheckResult(forecastDay.Day?.MaximumTemperatureFahrenheit, day.Daytime!.High!.To(TemperatureEnum.Fahrenheit), 0.001f, nameof(WeatherApiDay.MaximumTemperatureFahrenheit));
             var line = day.Lines.First();
-            Assert.AreEqual(apiResult.Forecast.ForecastDays[0].Hours![0].TempFahrenheit, line.CurrentTemperature!.To(TemperatureEnum.Fahrenheit), 0.001f, "Hourly temperature mapping incorrect.");
+            CheckResult(apiResult.Forecast.ForecastDays[0].Hours![0].TempFahrenheit, line.CurrentTemperature!.To(TemperatureEnum.Fahrenheit), 0.001f, "Hourly temperature mapping incorrect.");
         }
 
         [TestMethod]
@@ -257,7 +273,10 @@ namespace ID.WeatherDashboard.APITests.Services
             var expectedUrl = $"{WeatherAPIService._historyUrl}?key={apiKey}&q={location}&dt={start.ToUnixTimeSeconds()}&end_dt={end.ToUnixTimeSeconds()}";
             Assert.AreEqual(expectedUrl, reqUrl, $"History URL mismatch. Expected {expectedUrl} but got {reqUrl}.");
             Assert.IsNotNull(result, "HistoryData should not be null for valid API response.");
-            Assert.AreEqual(apiResult.Forecast!.ForecastDays![0].Hours![0].TempFahrenheit, result!.Lines.First().CurrentTemperature!.To(TemperatureEnum.Fahrenheit), 0.001f, "History temperature mapping incorrect.");
+            Assert.IsNotNull(result.Lines, $"{nameof(HistoryData.Lines)} is null and it shouldn't be.");
+            Assert.IsTrue(result.Lines.Any(), $"{nameof(HistoryData.Lines)} is empty and it shouldn't be.");
+            var l = result.Lines.First();
+            CheckResult(apiResult.Forecast!.ForecastDays![0].Hours![0].TempFahrenheit, l.CurrentTemperature?.To(TemperatureEnum.Fahrenheit), 0.001f, nameof(HistoryLine.CurrentTemperature));
         }
 
         [TestMethod]
