@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ID.WeatherDashboard.API.Codes;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -30,8 +31,14 @@ namespace ID.WeatherDashboard.API.Data
         public bool Equals(Location? other)
         {
             if (other is null) return false;
-            if (Latitude.HasValue && Longitude.HasValue && other.Latitude.HasValue && other.Longitude.HasValue)
-                return Latitude.Value.Equals(other.Latitude.Value) && Longitude.Value.Equals(other.Longitude.Value);
+
+            if (Latitude.HasValue && Longitude.HasValue &&
+                other.Latitude.HasValue && other.Longitude.HasValue)
+            {
+                var distance = DistanceTo(other);
+                return distance.To(DistanceEnum.Meters) <= 10;
+            }
+
             return string.Equals(Name, other.Name, StringComparison.OrdinalIgnoreCase);
         }
 
@@ -40,7 +47,11 @@ namespace ID.WeatherDashboard.API.Data
         public override int GetHashCode()
         {
             if (Latitude.HasValue && Longitude.HasValue)
-                return HashCode.Combine(Latitude.Value, Longitude.Value);
+            {
+                double latRounded = Math.Round(Latitude.Value, 4);
+                double lonRounded = Math.Round(Longitude.Value, 4);
+                return HashCode.Combine(latRounded, lonRounded);
+            }
             return Name?.ToLowerInvariant().GetHashCode() ?? 0;
         }
 
@@ -54,6 +65,28 @@ namespace ID.WeatherDashboard.API.Data
                 return Longitude.Value.CompareTo(other.Longitude.Value);
             }
             return string.Compare(Name, other.Name, StringComparison.OrdinalIgnoreCase);
+        }
+
+        public Distance DistanceTo(Location a)
+        {
+            if (!a.Latitude.HasValue || !a.Longitude.HasValue ||
+                !Latitude.HasValue || !Longitude.HasValue)
+                throw new InvalidOperationException("Both locations must have Latitude and Longitude.");
+
+            double R = 6371e3;
+            double φ1 = a.Latitude.Value.ToRadians();
+            double φ2 = Latitude.Value.ToRadians();
+            double Δφ = (Latitude.Value - a.Latitude.Value).ToRadians();
+            double Δλ = (Longitude.Value - a.Longitude.Value).ToRadians();
+
+            double h = Math.Sin(Δφ / 2) * Math.Sin(Δφ / 2) +
+                       Math.Cos(φ1) * Math.Cos(φ2) *
+                       Math.Sin(Δλ / 2) * Math.Sin(Δλ / 2);
+
+            double c = 2 * Math.Atan2(Math.Sqrt(h), Math.Sqrt(1 - h));
+            double distanceMeters = R * c;
+
+            return new Distance((float)distanceMeters, DistanceEnum.Meters);
         }
     }
 }

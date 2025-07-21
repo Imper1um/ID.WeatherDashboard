@@ -13,10 +13,12 @@ namespace ID.WeatherDashboard.API.Services
         Task<ForecastData?> GetForecastDataAsync(Location location);
         Task<HistoryData?> GetHistoryDataAsync(Location location);
         Task<SunData?> GetSunDataAsync(Location location);
+        Task<AlertData?> GetAlertDataAsync(Location location);
 
         event EventHandler<DataUpdatedEventArgs> CurrentDataUpdated;
         event EventHandler<DataUpdatedEventArgs> ForecastDataUpdated;
         event EventHandler<DataUpdatedEventArgs> HistoryDataUpdated;
         event EventHandler<DataUpdatedEventArgs> SunDataUpdated;
+        event EventHandler<DataUpdatedEventArgs> AlertDataUpdated;
     }
 }
