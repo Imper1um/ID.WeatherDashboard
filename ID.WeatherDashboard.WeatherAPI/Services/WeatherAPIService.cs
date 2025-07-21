@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace ID.WeatherDashboard.WeatherAPI.Services
 {
-    public class WeatherAPIService(IJsonQueryService jsonQueryService, ILogger<WeatherAPIService>? logger = null) : BaseKeyedService<WeatherApiConfig>(logger), IForecastQueryService, ICurrentQueryService, IHistoryQueryService, ISunDataService, IAlertQueryService
+    public class WeatherAPIService(IJsonQueryService jsonQueryService, ILogger<WeatherAPIService>? logger = null) : BaseService(logger), IForecastQueryService, ICurrentQueryService, IHistoryQueryService, ISunDataService, IAlertQueryService
     {
         private IJsonQueryService JsonQueryService { get; } = jsonQueryService;
         public const string _ServiceName = "WeatherAPI";
@@ -21,6 +21,9 @@ namespace ID.WeatherDashboard.WeatherAPI.Services
 
         public async Task<AlertData?> GetAlertDataAsync(Location location)
         {
+            if (string.IsNullOrWhiteSpace(ApiKey))
+                throw new InvalidOperationException($"ApiKey is not provided when it is required to run this service.");
+
             if (!TryCall()) return null;
             var q = location.ToString();
             var url = $"{_alertUrl}?key={ApiKey}&q={q}";
@@ -29,6 +32,9 @@ namespace ID.WeatherDashboard.WeatherAPI.Services
 
         public async Task<CurrentData?> GetCurrentDataAsync(Location location)
         {
+            if (string.IsNullOrWhiteSpace(ApiKey))
+                throw new InvalidOperationException($"ApiKey is not provided when it is required to run this service.");
+
             if (!TryCall()) return null;
             var q = location.ToString();
             var url = $"{_currentUrl}?key={ApiKey}&q={q}";
@@ -37,6 +43,9 @@ namespace ID.WeatherDashboard.WeatherAPI.Services
 
         public async Task<ForecastData?> GetForecastDataAsync(Location location, DateTimeOffset from, DateTimeOffset to)
         {
+            if (string.IsNullOrWhiteSpace(ApiKey))
+                throw new InvalidOperationException($"ApiKey is not provided when it is required to run this service.");
+
             if (!TryCall()) return null;
             var unixdt = from.ToUnixTimeSeconds();
             var days = (to - from).Days + 1;
@@ -51,6 +60,9 @@ namespace ID.WeatherDashboard.WeatherAPI.Services
 
         public async Task<HistoryData?> GetHistoryDataAsync(Location location, DateTimeOffset from, DateTimeOffset to)
         {
+            if (string.IsNullOrWhiteSpace(ApiKey))
+                throw new InvalidOperationException($"ApiKey is not provided when it is required to run this service.");
+
             if (!TryCall()) return null;
             if (to.Subtract(from).TotalDays > 30)
             {
@@ -67,6 +79,9 @@ namespace ID.WeatherDashboard.WeatherAPI.Services
 
         public async Task<SunData?> GetSunDataAsync(Location location, DateTimeOffset from, DateTimeOffset to)
         {
+            if (string.IsNullOrWhiteSpace(ApiKey))
+                throw new InvalidOperationException($"ApiKey is not provided when it is required to run this service.");
+
             var sunDatas = new List<SunData>();
             for (var d = from; d <= to; d = d.AddDays(1))
             {

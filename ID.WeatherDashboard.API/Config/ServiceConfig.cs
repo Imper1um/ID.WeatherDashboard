@@ -1,19 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
+﻿using System.Text.Json.Serialization;
 
 namespace ID.WeatherDashboard.API.Config
 {
-    [JsonPolymorphic(TypeDiscriminatorPropertyName = "$type")]
-    [JsonDerivedType(typeof(WeatherApiConfig))]
-    [JsonDerivedType(typeof(SunriseSunsetApiConfig))]
-    [JsonDerivedType(typeof(WUndergroundApiConfig))]
-    public abstract class ServiceConfig
+    public class ServiceConfig
     {
+        public required string Assembly { get; set; }
         public required string Name { get; set; }
+        public required string Type { get; set; }
+        public string? ApiKey { get; set; }
+        public string? StationId { get; set; }
         public int MaxCallsPerHour { get; set; }
         public int MaxCallsPerDay { get; set; }
     }

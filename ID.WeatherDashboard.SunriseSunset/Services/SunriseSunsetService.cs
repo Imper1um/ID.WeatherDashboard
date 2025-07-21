@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace ID.WeatherDashboard.SunriseSunset.Services
 {
-    public class SunriseSunsetService(IJsonQueryService jsonQueryService, ILogger<SunriseSunsetService>? logger = null) : BaseService<SunriseSunsetApiConfig>(logger), ISunDataService
+    public class SunriseSunsetService(IJsonQueryService jsonQueryService, ILogger<SunriseSunsetService>? logger = null) : BaseService(logger), ISunDataService
     {
         public const string DefaultServiceName = "SunriseSunset";
         public const string _serviceUrl = "https://api.sunrise-sunset.org/json";
@@ -17,6 +17,9 @@ namespace ID.WeatherDashboard.SunriseSunset.Services
 
         public async Task<SunData?> GetSunDataAsync(Location location, DateTimeOffset from, DateTimeOffset to)
         {
+            if (string.IsNullOrWhiteSpace(ApiKey))
+                throw new InvalidOperationException($"ApiKey is not provided when it is required to run this service.");
+
             var sunLines = new List<SunLine>();
             for (var dt = from.Date; dt <= to.Date; dt = dt.AddDays(1))
             {

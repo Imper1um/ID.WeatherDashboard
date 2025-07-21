@@ -22,14 +22,16 @@ namespace ID.WeatherDashboard.APITests.Services
             MoonPhaseService = new MoonPhaseService(JsonQueryService.Object, LocationStorageService.Object);
         }
 
-        private MoonPhaseConfig SetConfig(string? apiKey = null, string? name = null, int maxCallsPerDay = 100, int maxCallsPerHour = 100)
+        private ServiceConfig SetConfig(string? apiKey = null, string? name = null, int maxCallsPerDay = 100, int maxCallsPerHour = 100)
         {
-            var c = new MoonPhaseConfig()
+            var c = new ServiceConfig()
             {
                 ApiKey = apiKey ?? TestHelpers.RandomString(8, TestHelpers.UppercaseLetters, TestHelpers.Digits),
                 Name = name ?? TestHelpers.RandomString(8, TestHelpers.UppercaseLetters, TestHelpers.Digits),
                 MaxCallsPerDay = maxCallsPerDay,
-                MaxCallsPerHour = maxCallsPerHour
+                MaxCallsPerHour = maxCallsPerHour,
+                Assembly = "",
+                Type = ""
             };
             MoonPhaseService.SetServiceConfig(c);
             return c;
@@ -293,7 +295,7 @@ namespace ID.WeatherDashboard.APITests.Services
 
         #endregion
 
-        private void VerifyServiceRun(MoonPhaseConfig config, string? url, Tuple<string, string>[]? headers, Location location, DateTimeOffset date, SunData? result, Times? times = null)
+        private void VerifyServiceRun(ServiceConfig config, string? url, Tuple<string, string>[]? headers, Location location, DateTimeOffset date, SunData? result, Times? times = null)
         {
             var t = times ?? Times.Once();
             JsonQueryService.Verify(j => j.QueryAsync<MoonPhaseAdvancedAPI>(

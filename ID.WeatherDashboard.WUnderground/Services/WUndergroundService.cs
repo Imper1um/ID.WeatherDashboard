@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace ID.WeatherDashboard.WUnderground.Services
 {
-    public class WUndergroundService(IJsonQueryService jsonQueryService, ILogger<WUndergroundService>? logger = null) : BaseKeyedService<WUndergroundApiConfig>(logger), ICurrentQueryService, IHistoryQueryService
+    public class WUndergroundService(IJsonQueryService jsonQueryService, ILogger<WUndergroundService>? logger = null) : BaseService(logger), ICurrentQueryService, IHistoryQueryService
     {
         public const string DefaultServiceName = "WUnderground";
         public const string _historyUrl = "https://api.weather.com/v2/pws/history/all";
@@ -20,12 +20,22 @@ namespace ID.WeatherDashboard.WUnderground.Services
 
         public async Task<CurrentData?> GetCurrentDataAsync(Location location)
         {
+            if (string.IsNullOrWhiteSpace(ApiKey))
+                throw new InvalidOperationException($"ApiKey is required to execute this service.");
+            if (string.IsNullOrWhiteSpace(StationId))
+                throw new InvalidOperationException($"StationId is required to execute this service.");
+
             var url = $"{_currentUrl}?stationId={StationId}&format=json&units=e&apiKey={ApiKey}&numericPrecision=decimal";
             return (await JsonQueryService.QueryAsync<Observations>(url))?.ToCurrentData();
         }
 
         public async Task<HistoryData?> GetHistoryDataAsync(Location location, DateTimeOffset from, DateTimeOffset to)
         {
+            if (string.IsNullOrWhiteSpace(ApiKey))
+                throw new InvalidOperationException($"ApiKey is required to execute this service.");
+            if (string.IsNullOrWhiteSpace(StationId))
+                throw new InvalidOperationException($"StationId is required to execute this service.");
+
             var url = $"{_historyUrl}?stationId={StationId}&format=json&units=e&apiKey={ApiKey}&numericPrecision=decimal&startDate={from:yyyyMMdd}&endDate={to:yyyyMMdd}";
             return (await JsonQueryService.QueryAsync<Observations>(url))?.ToHistoryData();
         }

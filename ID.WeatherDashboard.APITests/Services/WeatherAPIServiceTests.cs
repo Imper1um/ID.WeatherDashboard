@@ -21,14 +21,16 @@ namespace ID.WeatherDashboard.APITests.Services
             service = new WeatherAPIService(jsonQuery.Object);
         }
 
-        private WeatherApiConfig SetConfig(string? apiKey = null, string? name = null, int maximumCallsPerHour = 100, int maximumCallsPerDay = 100)
+        private ServiceConfig SetConfig(string? apiKey = null, string? name = null, int maximumCallsPerHour = 100, int maximumCallsPerDay = 100)
         {
-            var config = new WeatherApiConfig()
+            var config = new ServiceConfig()
             {
                 ApiKey = apiKey ?? TestHelpers.RandomString(8, TestHelpers.UppercaseLetters),
                 Name = name ?? TestHelpers.RandomString(8, TestHelpers.UppercaseLetters, TestHelpers.LowercaseLetters),
                 MaxCallsPerDay = maximumCallsPerDay,
-                MaxCallsPerHour = maximumCallsPerHour
+                MaxCallsPerHour = maximumCallsPerHour,
+                Assembly = "",
+                Type = ""
             };
             service.SetServiceConfig(config);
             return config;
@@ -216,7 +218,10 @@ namespace ID.WeatherDashboard.APITests.Services
         [TestMethod]
         public async Task GetCurrentDataAsync_ShouldReturnNullWhenServiceReturnsNull()
         {
-            service.SetServiceConfig(new WeatherApiConfig { ApiKey = "key", Name = "WA" });
+            service.SetServiceConfig(new ServiceConfig { ApiKey = "key", Name = "WA",
+                Assembly = "",
+                Type = ""
+            });
             jsonQuery.Setup(j => j.QueryAsync<WeatherApiCurrentAPI>(It.IsAny<string>(), It.IsAny<Tuple<string,string>[]>() ))
                 .ReturnsAsync((WeatherApiCurrentAPI?)null);
 
@@ -229,7 +234,10 @@ namespace ID.WeatherDashboard.APITests.Services
         public async Task GetForecastDataAsync_ShouldRequestCorrectUrlAndMapData()
         {
             var apiKey = TestHelpers.RandomString(10, TestHelpers.Digits);
-            service.SetServiceConfig(new WeatherApiConfig { ApiKey = apiKey, Name = "WA" });
+            service.SetServiceConfig(new ServiceConfig { ApiKey = apiKey, Name = "WA",
+                Assembly = "",
+                Type = ""
+            });
             var location = new Location("ForecastTown");
             var start = new DateTimeOffset(DateTimeOffset.Now.AddDays(1).Date, TimeSpan.Zero);
             var end = start.AddDays(1);
@@ -257,7 +265,7 @@ namespace ID.WeatherDashboard.APITests.Services
         [TestMethod]
         public async Task GetForecastDataAsync_ShouldThrowWhenRangeExceedsLimit()
         {
-            service.SetServiceConfig(new WeatherApiConfig { ApiKey = "key", Name = "WA" });
+            service.SetServiceConfig(new ServiceConfig { ApiKey = "key", Name = "WA", Assembly = "", Type = "" });
             var from = new DateTimeOffset(DateTimeOffset.Now.Date, TimeSpan.Zero);
             var to = from.AddDays(15);
             await Assert.ThrowsExceptionAsync<ArgumentException>(() => service.GetForecastDataAsync(new Location("a"), from, to));
@@ -267,7 +275,7 @@ namespace ID.WeatherDashboard.APITests.Services
         public async Task GetHistoryDataAsync_ShouldRequestCorrectUrlAndMapData()
         {
             var apiKey = TestHelpers.RandomString(10, TestHelpers.Digits);
-            service.SetServiceConfig(new WeatherApiConfig { ApiKey = apiKey, Name = "WA" });
+            service.SetServiceConfig(new ServiceConfig { ApiKey = apiKey, Name = "WA", Assembly = "", Type = "" });
             var location = new Location("HistTown");
             var start = new DateTimeOffset(DateTimeOffset.Now.AddDays(-1).Date, TimeSpan.Zero);
             var end = new DateTimeOffset(DateTimeOffset.Now.Date, TimeSpan.Zero);
@@ -292,7 +300,7 @@ namespace ID.WeatherDashboard.APITests.Services
         [TestMethod]
         public async Task GetHistoryDataAsync_ShouldThrowWhenRangeExceedsLimit()
         {
-            service.SetServiceConfig(new WeatherApiConfig { ApiKey = "key", Name = "WA" });
+            service.SetServiceConfig(new ServiceConfig { ApiKey = "key", Name = "WA", Assembly = "", Type = "" });
             var from = new DateTimeOffset(DateTimeOffset.Now.AddDays(-31).Date, TimeSpan.Zero);
             var to = new DateTimeOffset(DateTimeOffset.Now.Date, TimeSpan.Zero);
             await Assert.ThrowsExceptionAsync<ArgumentException>(() => service.GetHistoryDataAsync(new Location("x"), from, to));
@@ -302,7 +310,7 @@ namespace ID.WeatherDashboard.APITests.Services
         public async Task GetSunDataAsync_ShouldAggregateDailyResults()
         {
             var apiKey = TestHelpers.RandomString(8, TestHelpers.Digits);
-            service.SetServiceConfig(new WeatherApiConfig { ApiKey = apiKey, Name = "WA" });
+            service.SetServiceConfig(new ServiceConfig { ApiKey = apiKey, Name = "WA", Assembly = "", Type = "" });
             var location = new Location("SunCity") { Latitude = 0, Longitude = 0 };
             var start = new DateTimeOffset(new DateTime(2024, 1, 1), TimeSpan.Zero);
             var end = start.AddDays(1);

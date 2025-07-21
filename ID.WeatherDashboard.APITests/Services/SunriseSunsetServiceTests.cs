@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using GeoTimeZone;
+using ID.WeatherDashboard.API.Config;
 using ID.WeatherDashboard.API.Data;
 using ID.WeatherDashboard.API.Services;
 using ID.WeatherDashboard.SunriseSunset.Data;
 using ID.WeatherDashboard.SunriseSunset.Services;
-using GeoTimeZone;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using ID.WeatherDashboard.API.Config;
 
 namespace ID.WeatherDashboard.APITests.Services
 {
@@ -26,11 +21,23 @@ namespace ID.WeatherDashboard.APITests.Services
             service = new SunriseSunsetService(jsonQueryService.Object);
         }
 
+        private void SetServiceConfig(string? name = null, int maxCallsPerDay = 100, int maxCallsPerHour = 100, string? assembly = null, string? type = null)
+        {
+            service.SetServiceConfig(new ServiceConfig()
+            {
+                Name = name ?? TestHelpers.RandomName(),
+                MaxCallsPerDay = maxCallsPerDay,
+                MaxCallsPerHour = maxCallsPerHour,
+                Assembly = assembly ?? TestHelpers.RandomName(),
+                Type = type ?? TestHelpers.RandomName()
+            });
+        }
+
         [TestMethod]
         public async Task GetSunDataAsync_ShouldThrowWhenLocationMissingCoordinates()
         {
             var location = new Location("Nowhere");
-            service.SetServiceConfig(new SunriseSunsetApiConfig() { Name = TestHelpers.RandomName(), MaxCallsPerDay = 100, MaxCallsPerHour = 100 });
+            SetServiceConfig();
             await Assert.ThrowsExceptionAsync<ArgumentException>(() => service.GetSunDataAsync(location, DateTimeOffset.Now, DateTimeOffset.Now));
         }
 
@@ -46,7 +53,7 @@ namespace ID.WeatherDashboard.APITests.Services
                 .ReturnsAsync(result1)
                 .ReturnsAsync(result2)
                 .ReturnsAsync(result3);
-            service.SetServiceConfig(new SunriseSunsetApiConfig() { Name = TestHelpers.RandomName(), MaxCallsPerDay = 100, MaxCallsPerHour = 100 });
+            SetServiceConfig();
 
             var location = new Location("NY") { Latitude = 40.7128, Longitude = -74.0060 };
             var tzid = TimeZoneLookup.GetTimeZone(location.Latitude!.Value, location.Longitude!.Value).Result;

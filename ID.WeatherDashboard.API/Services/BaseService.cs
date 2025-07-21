@@ -4,13 +4,14 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace ID.WeatherDashboard.API.Services
 {
-    public abstract class BaseService<T>(ILogger<BaseService<T>>? logger = null) where T : ServiceConfig
+    public abstract class BaseService(ILogger<BaseService>? logger = null)
     {
-        protected ILogger<BaseService<T>> Logger { get; } = logger ?? NullLogger<BaseService<T>>.Instance;
+        protected ILogger<BaseService> Logger { get; } = logger ?? NullLogger<BaseService>.Instance;
 
         protected abstract string BaseServiceName { get; }
 
-        public T? Config { get; set; }
+        public ServiceConfig? Config { get; private set; }
+        protected virtual string? ApiKey => Config?.ApiKey;
 
         public virtual string ServiceName => Config?.Name ?? BaseServiceName;
         
@@ -34,10 +35,7 @@ namespace ID.WeatherDashboard.API.Services
 
         public void SetServiceConfig(ServiceConfig config)
         {
-            if (config is T c)
-            {
-                Config = c;
-            }
+            Config = config;
         }
     }
 }

@@ -18,8 +18,13 @@
 
     <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
     <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.3.2" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.7" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.7" />
     <PackageReference Include="OpenAI" Version="2.2.0" />
     <PackageReference Include="ReactiveUI" Version="20.4.1" />
+    <PackageReference Include="Serilog" Version="4.3.0" />
+    <PackageReference Include="Serilog.Extensions.Logging" Version="9.0.2" />
+    <PackageReference Include="Serilog.Settings.Configuration" Version="9.0.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -29,4 +34,18 @@
   <ItemGroup>
     <Folder Include="Assets\Backgrounds\" />
   </ItemGroup>
+
+	<Target Name="CopyDashboardPlugins" AfterTargets="Build">
+		<ItemGroup>
+			<DashboardPlugins Include="..\ID.WeatherDashboard.MoonPhase\bin\$(Configuration)\$(TargetFramework)\ID.WeatherDashboard.MoonPhase.dll" />
+			<DashboardPlugins Include="..\ID.WeatherDashboard.SunriseSunset\bin\$(Configuration)\$(TargetFramework)\ID.WeatherDashboard.SunriseSunset.dll" />
+			<DashboardPlugins Include="..\ID.WeatherDashboard.WeatherAPI\bin\$(Configuration)\$(TargetFramework)\ID.WeatherDashboard.WeatherAPI.dll" />
+			<DashboardPlugins Include="..\ID.WeatherDashboard.WUnderground\bin\$(Configuration)\$(TargetFramework)\ID.WeatherDashboard.WUnderground.dll" />
+		</ItemGroup>
+
+		<Copy SourceFiles="@(DashboardPlugins)"
+			  DestinationFolder="$(OutputPath)"
+			  SkipUnchangedFiles="true" />
+	</Target>
+
 </Project>

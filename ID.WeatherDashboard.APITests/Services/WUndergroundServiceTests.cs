@@ -1,4 +1,4 @@
-using ID.WeatherDashboard.API.Config;
+﻿using ID.WeatherDashboard.API.Config;
 using ID.WeatherDashboard.API.Data;
 using ID.WeatherDashboard.API.Services;
 using ID.WeatherDashboard.API.Codes;
@@ -20,6 +20,29 @@ namespace ID.WeatherDashboard.APITests.Services
         {
             jsonQuery = new Mock<IJsonQueryService>();
             service = new WUndergroundService(jsonQuery.Object);
+        }
+
+        private ServiceConfig SetServiceConfig(string? name = null, int maxCallsPerDay = 100, int maxCallsPerHour = 100, string? assembly = null, string? type = null, string? apiKey = null, string? stationId = null)
+        {
+            var serviceConfig = new ServiceConfig
+            {
+                StationId = stationId ?? TestHelpers.RandomName()
+                ,
+                ApiKey = apiKey ?? TestHelpers.RandomKey()
+                ,
+                Name = name ?? TestHelpers.RandomName()
+            ,
+                Assembly = assembly ?? TestHelpers.RandomName()
+            ,
+                Type = type ?? TestHelpers.RandomName()
+            ,
+                MaxCallsPerDay = maxCallsPerDay
+            ,
+                MaxCallsPerHour = maxCallsPerHour
+            };
+
+            service.SetServiceConfig(serviceConfig);
+            return serviceConfig;
         }
 
         private static Observation GenerateObservation()
@@ -53,9 +76,7 @@ namespace ID.WeatherDashboard.APITests.Services
         [TestMethod]
         public async Task GetCurrentDataAsync_ShouldRequestCorrectUrlAndMapObservation()
         {
-            var stationId = TestHelpers.RandomString(6, TestHelpers.UppercaseLetters, TestHelpers.Digits);
-            var apiKey = TestHelpers.RandomString(12, TestHelpers.Digits);
-            service.SetServiceConfig(new WUndergroundApiConfig { StationId = stationId, ApiKey = apiKey, Name = "WU" });
+            var config = SetServiceConfig();
 
             var obs = GenerateObservation();
             var observations = new Observations { Pulled = obs.Pulled, ObservationLines = [ obs ] };
@@ -66,7 +87,7 @@ namespace ID.WeatherDashboard.APITests.Services
 
             var result = await service.GetCurrentDataAsync(new Location("Unit"));
 
-            var expectedUrl = $"{WUndergroundService._currentUrl}?stationId={stationId}&format=json&units=e&apiKey={apiKey}&numericPrecision=decimal";
+            var expectedUrl = $"{WUndergroundService._currentUrl}?stationId={config.StationId}&format=json&units=e&apiKey={config.ApiKey}&numericPrecision=decimal";
             Assert.AreEqual(expectedUrl, requestedUrl, $"URL mismatch. Expected {expectedUrl} but got {requestedUrl}.");
             Assert.IsNotNull(result, "Service did not return CurrentData as expected.");
             Assert.AreEqual(DateTimeOffset.FromUnixTimeSeconds((long)obs.Epoch!), result!.Observed, "Observed time incorrect.");
@@ -97,7 +118,7 @@ namespace ID.WeatherDashboard.APITests.Services
         [TestMethod]
         public async Task GetCurrentDataAsync_ShouldReturnNullWhenQueryReturnsNull()
         {
-            service.SetServiceConfig(new WUndergroundApiConfig { StationId = "id", ApiKey = "key", Name = "WU" });
+            SetServiceConfig();
             jsonQuery.Setup(j => j.QueryAsync<Observations>(It.IsAny<string>(), It.IsAny<Tuple<string,string>[]>() ))
                 .ReturnsAsync((Observations?)null);
             var result = await service.GetCurrentDataAsync(new Location("Unit"));
@@ -107,9 +128,7 @@ namespace ID.WeatherDashboard.APITests.Services
         [TestMethod]
         public async Task GetHistoryDataAsync_ShouldRequestCorrectUrlAndMapObservations()
         {
-            var stationId = TestHelpers.RandomString(6, TestHelpers.UppercaseLetters, TestHelpers.Digits);
-            var apiKey = TestHelpers.RandomString(10, TestHelpers.Digits);
-            service.SetServiceConfig(new WUndergroundApiConfig { StationId = stationId, ApiKey = apiKey, Name = "WU" });
+            var config = SetServiceConfig();
 
             var obs1 = GenerateObservation();
             var obs2 = GenerateObservation();
@@ -123,7 +142,7 @@ namespace ID.WeatherDashboard.APITests.Services
             var to = DateTimeOffset.Now.Date;
             var result = await service.GetHistoryDataAsync(new Location("Hist"), from, to);
 
-            var expectedUrl = $"{WUndergroundService._historyUrl}?stationId={stationId}&format=json&units=e&apiKey={apiKey}&numericPrecision=decimal&startDate={from:yyyyMMdd}&endDate={to:yyyyMMdd}";
+            var expectedUrl = $"{WUndergroundService._historyUrl}?stationId={config.StationId}&format=json&units=e&apiKey={config.ApiKey}&numericPrecision=decimal&startDate={from:yyyyMMdd}&endDate={to:yyyyMMdd}";
             Assert.AreEqual(expectedUrl, url, $"URL mismatch. Expected {expectedUrl} but got {url}.");
             Assert.IsNotNull(result, "Expected HistoryData to be returned.");
             var lines = result!.Lines.ToArray();

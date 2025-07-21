@@ -3,11 +3,10 @@ using ID.WeatherDashboard.API.Data;
 using ID.WeatherDashboard.API.Services;
 using ID.WeatherDashboard.MoonPhase.Data;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 
 namespace ID.WeatherDashboard.MoonPhase.Services
 {
-    public class MoonPhaseService(IJsonQueryService jsonQueryService, ILocationStorageService locationStorageService, ILogger<MoonPhaseService>? logger = null) : BaseKeyedService<MoonPhaseConfig>(logger), ISunDataService
+    public class MoonPhaseService(IJsonQueryService jsonQueryService, ILocationStorageService locationStorageService, ILogger<MoonPhaseService>? logger = null) : BaseService(logger), ISunDataService
     {
         private IJsonQueryService JsonQueryService { get; } = jsonQueryService;
         private ILocationStorageService LocationStorageService { get; } = locationStorageService;
@@ -18,6 +17,8 @@ namespace ID.WeatherDashboard.MoonPhase.Services
 
         public async Task<SunData?> GetSunDataAsync(Location location, DateTimeOffset from, DateTimeOffset to)
         {
+            if (string.IsNullOrWhiteSpace(ApiKey))
+                throw new InvalidOperationException($"ApiKey is not provided when it is required to run this service.");
             if (location.Latitude == null || location.Longitude == null)
                 LocationStorageService.ResolveGeolocation(location);
             var lat = location.Latitude?.ToString("F3", System.Globalization.CultureInfo.InvariantCulture);
