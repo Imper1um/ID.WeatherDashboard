@@ -21,7 +21,7 @@ namespace ID.WeatherDashboard.APITests.Services
             service = new SunriseSunsetService(jsonQueryService.Object);
         }
 
-        private void SetServiceConfig(string? name = null, int maxCallsPerDay = 100, int maxCallsPerHour = 100, string? assembly = null, string? type = null)
+        private void SetServiceConfig(string? name = null, int maxCallsPerDay = 100, int maxCallsPerHour = 100, string? assembly = null, string? type = null, string? apiKey = null)
         {
             service.SetServiceConfig(new ServiceConfig()
             {
@@ -29,7 +29,8 @@ namespace ID.WeatherDashboard.APITests.Services
                 MaxCallsPerDay = maxCallsPerDay,
                 MaxCallsPerHour = maxCallsPerHour,
                 Assembly = assembly ?? TestHelpers.RandomName(),
-                Type = type ?? TestHelpers.RandomName()
+                Type = type ?? TestHelpers.RandomName(),
+                ApiKey = apiKey ?? TestHelpers.RandomKey()
             });
         }
 
@@ -75,6 +76,8 @@ namespace ID.WeatherDashboard.APITests.Services
         {
             jsonQueryService.Setup(j => j.QueryAsync<SunriseSunsetApiResult>(It.IsAny<string>(), It.IsAny<Tuple<string, string>[]>()))
                 .ReturnsAsync((SunriseSunsetApiResult?)null);
+
+            SetServiceConfig();
 
             var location = new Location("NY") { Latitude = 40.7128, Longitude = -74.0060 };
             var from = new DateTimeOffset(new DateTime(2024, 1, 1), TimeSpan.Zero);

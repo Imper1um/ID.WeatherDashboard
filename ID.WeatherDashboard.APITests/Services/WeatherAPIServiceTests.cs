@@ -233,11 +233,7 @@ namespace ID.WeatherDashboard.APITests.Services
         [TestMethod]
         public async Task GetForecastDataAsync_ShouldRequestCorrectUrlAndMapData()
         {
-            var apiKey = TestHelpers.RandomString(10, TestHelpers.Digits);
-            service.SetServiceConfig(new ServiceConfig { ApiKey = apiKey, Name = "WA",
-                Assembly = "",
-                Type = ""
-            });
+            var config = SetConfig();
             var location = new Location("ForecastTown");
             var start = new DateTimeOffset(DateTimeOffset.Now.AddDays(1).Date, TimeSpan.Zero);
             var end = start.AddDays(1);
@@ -249,8 +245,9 @@ namespace ID.WeatherDashboard.APITests.Services
                 .ReturnsAsync(apiResult);
 
             var result = await service.GetForecastDataAsync(location, start, end);
+            jsonQuery.Verify(j => j.QueryAsync<WeatherApiForecastAPI>(It.IsAny<string>(), It.IsAny<Tuple<string, string>[]>()), Times.AtLeastOnce);
 
-            var expectedUrl = $"{WeatherAPIService._forecastUrl}?key={apiKey}&q={location}&dt={start.ToUnixTimeSeconds()}&days=2";
+            var expectedUrl = $"{WeatherAPIService._forecastUrl}?key={config.ApiKey}&q={location}&dt={start.ToUnixTimeSeconds()}&days=2";
             Assert.AreEqual(expectedUrl, url, $"Forecast URL mismatch. Expected {expectedUrl} but got {url}.");
             Assert.IsNotNull(result, "ForecastData should not be null when API provides data.");
             var day = result!.Days.First();
@@ -265,7 +262,7 @@ namespace ID.WeatherDashboard.APITests.Services
         [TestMethod]
         public async Task GetForecastDataAsync_ShouldThrowWhenRangeExceedsLimit()
         {
-            service.SetServiceConfig(new ServiceConfig { ApiKey = "key", Name = "WA", Assembly = "", Type = "" });
+            var config = SetConfig();
             var from = new DateTimeOffset(DateTimeOffset.Now.Date, TimeSpan.Zero);
             var to = from.AddDays(15);
             await Assert.ThrowsExceptionAsync<ArgumentException>(() => service.GetForecastDataAsync(new Location("a"), from, to));
@@ -274,8 +271,7 @@ namespace ID.WeatherDashboard.APITests.Services
         [TestMethod]
         public async Task GetHistoryDataAsync_ShouldRequestCorrectUrlAndMapData()
         {
-            var apiKey = TestHelpers.RandomString(10, TestHelpers.Digits);
-            service.SetServiceConfig(new ServiceConfig { ApiKey = apiKey, Name = "WA", Assembly = "", Type = "" });
+            var config = SetConfig();
             var location = new Location("HistTown");
             var start = new DateTimeOffset(DateTimeOffset.Now.AddDays(-1).Date, TimeSpan.Zero);
             var end = new DateTimeOffset(DateTimeOffset.Now.Date, TimeSpan.Zero);
@@ -287,8 +283,9 @@ namespace ID.WeatherDashboard.APITests.Services
                 .ReturnsAsync(apiResult);
 
             var result = await service.GetHistoryDataAsync(location, start, end);
+            jsonQuery.Verify(j => j.QueryAsync<WeatherApiHistoryAPI>(It.IsAny<string>(), It.IsAny<Tuple<string, string>[]>()), Times.AtLeastOnce);
 
-            var expectedUrl = $"{WeatherAPIService._historyUrl}?key={apiKey}&q={location}&dt={start.ToUnixTimeSeconds()}&end_dt={end.ToUnixTimeSeconds()}";
+            var expectedUrl = $"{WeatherAPIService._historyUrl}?key={config.ApiKey}&q={location}&dt={start.ToUnixTimeSeconds()}&end_dt={end.ToUnixTimeSeconds()}";
             Assert.AreEqual(expectedUrl, reqUrl, $"History URL mismatch. Expected {expectedUrl} but got {reqUrl}.");
             Assert.IsNotNull(result, "HistoryData should not be null for valid API response.");
             Assert.IsNotNull(result.Lines, $"{nameof(HistoryData.Lines)} is null and it shouldn't be.");
@@ -300,7 +297,7 @@ namespace ID.WeatherDashboard.APITests.Services
         [TestMethod]
         public async Task GetHistoryDataAsync_ShouldThrowWhenRangeExceedsLimit()
         {
-            service.SetServiceConfig(new ServiceConfig { ApiKey = "key", Name = "WA", Assembly = "", Type = "" });
+            SetConfig();
             var from = new DateTimeOffset(DateTimeOffset.Now.AddDays(-31).Date, TimeSpan.Zero);
             var to = new DateTimeOffset(DateTimeOffset.Now.Date, TimeSpan.Zero);
             await Assert.ThrowsExceptionAsync<ArgumentException>(() => service.GetHistoryDataAsync(new Location("x"), from, to));
@@ -309,8 +306,7 @@ namespace ID.WeatherDashboard.APITests.Services
         [TestMethod]
         public async Task GetSunDataAsync_ShouldAggregateDailyResults()
         {
-            var apiKey = TestHelpers.RandomString(8, TestHelpers.Digits);
-            service.SetServiceConfig(new ServiceConfig { ApiKey = apiKey, Name = "WA", Assembly = "", Type = "" });
+            var config = SetConfig();
             var location = new Location("SunCity") { Latitude = 0, Longitude = 0 };
             var start = new DateTimeOffset(new DateTime(2024, 1, 1), TimeSpan.Zero);
             var end = start.AddDays(1);
@@ -323,7 +319,7 @@ namespace ID.WeatherDashboard.APITests.Services
 
             var data = await service.GetSunDataAsync(location, start, end);
 
-            var expectedUrl = $"{WeatherAPIService._astronomyUrl}?key={apiKey}&q={location}&dt={start:yyyy-MM-dd}";
+            var expectedUrl = $"{WeatherAPIService._astronomyUrl}?key={config.ApiKey}&q={location}&dt={start:yyyy-MM-dd}";
             jsonQuery.Verify(j => j.QueryAsync<WeatherApiAstronomyAPI>(expectedUrl, It.IsAny<Tuple<string,string>[]>()), Times.Once());
             Assert.IsNotNull(data, "SunData should not be null.");
             Assert.AreEqual(2, data!.Lines.Count(), $"Expected 2 sun lines for range {start:d} to {end:d}.");
