@@ -3,12 +3,14 @@ using ID.WeatherDashboard.API.Data;
 using ID.WeatherDashboard.API.Services;
 using ID.WeatherDashboard.MoonPhase.Data;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace ID.WeatherDashboard.MoonPhase.Services
 {
-    public class MoonPhaseService(IJsonQueryService jsonQueryService, ILogger<MoonPhaseService>? logger = null) : BaseKeyedService<MoonPhaseConfig>(logger), ISunDataService
+    public class MoonPhaseService(IJsonQueryService jsonQueryService, ILocationStorageService locationStorageService, ILogger<MoonPhaseService>? logger = null) : BaseKeyedService<MoonPhaseConfig>(logger), ISunDataService
     {
         private IJsonQueryService JsonQueryService { get; } = jsonQueryService;
+        private ILocationStorageService LocationStorageService { get; } = locationStorageService;
         public const string _ServiceName = "MoonPhase";
         public const string _advancedUrl = "https://moon-phase.p.rapidapi.com/advanced";
 
@@ -16,6 +18,8 @@ namespace ID.WeatherDashboard.MoonPhase.Services
 
         public async Task<SunData?> GetSunDataAsync(Location location, DateTimeOffset from, DateTimeOffset to)
         {
+            if (location.Latitude == null || location.Longitude == null)
+                LocationStorageService.ResolveGeolocation(location);
             var lat = location.Latitude?.ToString("F3", System.Globalization.CultureInfo.InvariantCulture);
             var lon = location.Longitude?.ToString("F3", System.Globalization.CultureInfo.InvariantCulture);
             if (lat == null || lon == null)
@@ -35,13 +39,18 @@ namespace ID.WeatherDashboard.MoonPhase.Services
 
                 try
                 {
-                    var sunData = (await JsonQueryService.QueryAsync<MoonPhaseAdvancedAPI>(url, [.. headers]))?.ToSunData(d.Date);
+                    var result = await JsonQueryService.QueryAsync<MoonPhaseAdvancedAPI>(url, [.. headers]);
+                    var sunData = result?.ToSunData(d.Date);
                     if (sunData != null)
+                    {
+                        if (!string.IsNullOrWhiteSpace(location.Name))
+                            LocationStorageService.UploadGeolocation(new Location(location.Name) { Latitude = result!.Location!.Latitude, Longitude = result.Location.Longitude });
                         sunDatas.Add(sunData);
+                    }
                 } 
                 catch (Exception ex)
                 {
-                    //TODO: Log this.
+                    Logger.LogDebug(ex, "Exception caused when trying to parse MoonPhase Data: {ExceptionData}", ex.GetFullMessage());
                 }
             }
             return new SunData(DateTimeOffset.Now, [.. sunDatas.SelectMany(sd => sd.Lines)]);

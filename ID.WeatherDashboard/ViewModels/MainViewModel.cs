@@ -16,9 +16,16 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+using ID.WeatherDashboard.API.Config;
+using ID.WeatherDashboard.API.Services;
+using ReactiveUI;
+
 namespace ID.WeatherDashboard.ViewModels;
 
-public partial class MainViewModel : ViewModelBase
+public partial class MainViewModel(IDataRetrieverService dataRetrieverService, IConfigManager configManager) : ReactiveObject
 {
+    private readonly IDataRetrieverService DataRetrieverService = dataRetrieverService;
+    private readonly IConfigManager ConfigManager = configManager;
+
     public string Greeting => "Welcome to Avalonia!";
 }

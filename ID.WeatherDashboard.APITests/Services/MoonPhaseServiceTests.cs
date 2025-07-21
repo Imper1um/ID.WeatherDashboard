@@ -4,12 +4,6 @@ using ID.WeatherDashboard.API.Services;
 using ID.WeatherDashboard.MoonPhase.Data;
 using ID.WeatherDashboard.MoonPhase.Services;
 using Moq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection.PortableExecutable;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ID.WeatherDashboard.APITests.Services
 {
@@ -17,13 +11,15 @@ namespace ID.WeatherDashboard.APITests.Services
     public class MoonPhaseServiceTests
     {
         private Mock<IJsonQueryService> JsonQueryService = null!;
+        private Mock<ILocationStorageService> LocationStorageService = null!;
         private MoonPhaseService MoonPhaseService = null!;
 
         [TestInitialize]
         public void Initialize()
         {
             JsonQueryService = new Mock<IJsonQueryService>();
-            MoonPhaseService = new MoonPhaseService(JsonQueryService.Object);
+            LocationStorageService = new Mock<ILocationStorageService>();
+            MoonPhaseService = new MoonPhaseService(JsonQueryService.Object, LocationStorageService.Object);
         }
 
         private MoonPhaseConfig SetConfig(string? apiKey = null, string? name = null, int maxCallsPerDay = 100, int maxCallsPerHour = 100)
