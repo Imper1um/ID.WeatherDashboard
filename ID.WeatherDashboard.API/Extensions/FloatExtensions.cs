@@ -1,8 +1,17 @@
-﻿
 using ID.WeatherDashboard.API.Codes;
 
+/// <summary>
+///     Provides conversion helper methods for <see cref="float"/> values.
+/// </summary>
 public static class FloatExtensions
 {
+    /// <summary>
+    ///     Converts a temperature from one unit to another.
+    /// </summary>
+    /// <param name="val">The value to convert.</param>
+    /// <param name="from">The unit the value is stored in.</param>
+    /// <param name="to">The target unit.</param>
+    /// <returns>The converted value or <see langword="null"/> if <paramref name="val"/> is <see langword="null"/>.</returns>
     public static float? Convert(this float? val, TemperatureEnum from, TemperatureEnum to)
     {
         if (!val.HasValue) return null;
@@ -14,6 +23,13 @@ public static class FloatExtensions
         };
     }
 
+    /// <summary>
+    ///     Converts a pressure value between units.
+    /// </summary>
+    /// <param name="val">The value to convert.</param>
+    /// <param name="from">The source unit.</param>
+    /// <param name="to">The destination unit.</param>
+    /// <returns>The converted value or <see langword="null"/> if <paramref name="val"/> is <see langword="null"/>.</returns>
     public static float? Convert(this float? val, PressureEnum from, PressureEnum to)
     {
         if (!val.HasValue) return null;
@@ -35,7 +51,15 @@ public static class FloatExtensions
         };
     }
 
-    public static float? Convert(this float? val, PrecipitationEnum from, PrecipitationEnum to)     {
+    /// <summary>
+    ///     Converts a precipitation value between units.
+    /// </summary>
+    /// <param name="val">The value to convert.</param>
+    /// <param name="from">The source unit.</param>
+    /// <param name="to">The destination unit.</param>
+    /// <returns>The converted value or <see langword="null"/> if <paramref name="val"/> is <see langword="null"/>.</returns>
+    public static float? Convert(this float? val, PrecipitationEnum from, PrecipitationEnum to)
+    {
         if (!val.HasValue) return null;
         return from switch
         {
@@ -44,7 +68,7 @@ public static class FloatExtensions
             PrecipitationEnum.Inches when to == PrecipitationEnum.Feet => val.Value / 12f,
             PrecipitationEnum.Inches when to == PrecipitationEnum.LitersPerSquareMeter => val.Value * 25.4f / 1000f,
             PrecipitationEnum.Millimeters when to == PrecipitationEnum.Inches => val.Value / 25.4f,
-            PrecipitationEnum.Millimeters when to == PrecipitationEnum.Centimeters => val.Value / 10f,  
+            PrecipitationEnum.Millimeters when to == PrecipitationEnum.Centimeters => val.Value / 10f,
             PrecipitationEnum.Millimeters when to == PrecipitationEnum.Feet => val.Value / 304.8f,
             PrecipitationEnum.Millimeters when to == PrecipitationEnum.LitersPerSquareMeter => val.Value / 1000f,
             PrecipitationEnum.Centimeters when to == PrecipitationEnum.Inches => val.Value / 2.54f,
@@ -59,6 +83,13 @@ public static class FloatExtensions
         };
     }
 
+    /// <summary>
+    ///     Converts a wind speed value between units.
+    /// </summary>
+    /// <param name="val">The value to convert.</param>
+    /// <param name="from">The source unit.</param>
+    /// <param name="to">The destination unit.</param>
+    /// <returns>The converted value or <see langword="null"/> if <paramref name="val"/> is <see langword="null"/>.</returns>
     public static float? Convert(this float? val, WindSpeedEnum from, WindSpeedEnum to)
     {
         if (!val.HasValue) return null;
@@ -77,7 +108,15 @@ public static class FloatExtensions
         };
     }
 
-    public static float? Convert(this float? val, DistanceEnum from, DistanceEnum to)     {
+    /// <summary>
+    ///     Converts a distance value between units.
+    /// </summary>
+    /// <param name="val">The value to convert.</param>
+    /// <param name="from">The source unit.</param>
+    /// <param name="to">The destination unit.</param>
+    /// <returns>The converted value or <see langword="null"/> if <paramref name="val"/> is <see langword="null"/>.</returns>
+    public static float? Convert(this float? val, DistanceEnum from, DistanceEnum to)
+    {
         if (!val.HasValue) return null;
         return from switch
         {
@@ -93,7 +132,7 @@ public static class FloatExtensions
             DistanceEnum.Meters when to == DistanceEnum.Kilometers => val.Value / 1000f,
             DistanceEnum.Meters when to == DistanceEnum.Feet => val.Value * 3.28084f,
             DistanceEnum.Meters when to == DistanceEnum.NauticalMiles => val.Value / 1852f,
-            DistanceEnum.Feet when to == DistanceEnum.Miles => val.Value / 5280f,   
+            DistanceEnum.Feet when to == DistanceEnum.Miles => val.Value / 5280f,
             DistanceEnum.Feet when to == DistanceEnum.Kilometers => val.Value / 3280.84f,
             DistanceEnum.Feet when to == DistanceEnum.Meters => val.Value / 3.28084f,
             DistanceEnum.Feet when to == DistanceEnum.NauticalMiles => val.Value / 6076.12f,
@@ -105,4 +144,3 @@ public static class FloatExtensions
         };
     }
 }
-

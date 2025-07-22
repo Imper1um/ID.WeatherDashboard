@@ -1,8 +1,16 @@
-﻿using Microsoft.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using System.Diagnostics;
 
+/// <summary>
+///     Provides helper methods for working with <see cref="Exception"/> objects.
+/// </summary>
 public static class ExceptionExtensions
 {
+    /// <summary>
+    ///     Builds a detailed string for the supplied <paramref name="ex"/> including stack trace information.
+    /// </summary>
+    /// <param name="ex">The exception to inspect.</param>
+    /// <returns>A formatted string describing the exception.</returns>
     public static string GetFullMessage(this Exception ex)
     {
         var str = $"{ex.GetType()}: {ex.Message}";
