@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <AvaloniaResource Include="Assets\**" />
+    <AvaloniaResource Include="Assets\**\*" />
   </ItemGroup>
 
   <ItemGroup>
@@ -33,6 +33,7 @@
 
   <ItemGroup>
     <Folder Include="Assets\Backgrounds\" />
+    <Folder Include="Assets\Icons\" />
   </ItemGroup>
 
 	<Target Name="CopyDashboardPlugins" AfterTargets="Build">
@@ -43,9 +44,7 @@
 			<DashboardPlugins Include="..\ID.WeatherDashboard.WUnderground\bin\$(Configuration)\$(TargetFramework)\ID.WeatherDashboard.WUnderground.dll" />
 		</ItemGroup>
 
-		<Copy SourceFiles="@(DashboardPlugins)"
-			  DestinationFolder="$(OutputPath)"
-			  SkipUnchangedFiles="true" />
+		<Copy SourceFiles="@(DashboardPlugins)" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true" />
 	</Target>
 
 </Project>

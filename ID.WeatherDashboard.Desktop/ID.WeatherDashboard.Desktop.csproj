@@ -8,6 +8,12 @@
 		<BuiltInComInteropSupport>true</BuiltInComInteropSupport>
 		<ApplicationManifest>app.manifest</ApplicationManifest>
 	</PropertyGroup>
+	<ItemGroup>
+	  <None Remove="Assets\Backgrounds\Cloudy001.jpg" />
+	</ItemGroup>
+	<ItemGroup>
+	  <AvaloniaResource Include="Assets\Backgrounds\Cloudy001.jpg" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Avalonia.Desktop" Version="11.3.2" />
@@ -31,9 +37,7 @@
 			<DashboardPlugins Include="..\ID.WeatherDashboard.WUnderground\bin\$(Configuration)\$(TargetFramework)\ID.WeatherDashboard.WUnderground.dll" />
 		</ItemGroup>
 
-		<Copy SourceFiles="@(DashboardPlugins)"
-			  DestinationFolder="$(OutputPath)"
-			  SkipUnchangedFiles="true" />
+		<Copy SourceFiles="@(DashboardPlugins)" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true" />
 	</Target>
 
 </Project>

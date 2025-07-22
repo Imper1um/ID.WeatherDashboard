@@ -4,6 +4,12 @@
 		<OutputType>Exe</OutputType>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	</PropertyGroup>
+	<ItemGroup>
+	  <None Remove="Assets\Backgrounds\Cloudy001.jpg" />
+	</ItemGroup>
+	<ItemGroup>
+	  <AvaloniaResource Include="Assets\Backgrounds\Cloudy001.jpg" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Avalonia.Browser" Version="11.3.2" />
@@ -26,9 +32,7 @@
 			<DashboardPlugins Include="..\ID.WeatherDashboard.WUnderground\bin\$(Configuration)\net8.0\ID.WeatherDashboard.WUnderground.dll" />
 		</ItemGroup>
 
-		<Copy SourceFiles="@(DashboardPlugins)"
-			  DestinationFolder="$(OutputPath)"
-			  SkipUnchangedFiles="true" />
+		<Copy SourceFiles="@(DashboardPlugins)" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true" />
 	</Target>
 
 </Project>

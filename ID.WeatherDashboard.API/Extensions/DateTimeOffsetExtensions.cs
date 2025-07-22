@@ -1,5 +1,10 @@
 ﻿public static class DateTimeOffsetExtensions
 {
+    public static DateTimeOffset SecondOf(this DateTimeOffset value)
+    {
+        return new DateTimeOffset(value.Year, value.Month, value.Day, value.Hour, value.Minute, value.Second, value.Offset);
+    }
+
     public static DateTimeOffset MinuteOf(this DateTimeOffset value)
     {
         return new DateTimeOffset(value.Year, value.Month, value.Day, value.Hour, value.Minute, 0, value.Offset);

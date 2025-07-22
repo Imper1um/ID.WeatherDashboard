@@ -1,0 +1,89 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:local="clr-namespace:ID.WeatherDashboard.Controls"
+			 x:Class="ID.WeatherDashboard.Controls.OutlinedTextBlock">
+	<Grid>
+		<Grid.DataContext>
+			<Binding RelativeSource="{RelativeSource AncestorType=local:OutlinedTextBlock}" />
+		</Grid.DataContext>
+		<TextBlock x:Name="TopLeft"
+           Text="{Binding Text}"
+           Margin="{Binding TopLeftOffset}"
+           Foreground="{Binding StrokeBrush}"
+           FontWeight="{Binding FontWeight}"
+           FontSize="{Binding FontSize}"
+				   LetterSpacing="{Binding LetterSpacing}"
+				   FontFamily="{Binding FontFamily}" />
+
+		<TextBlock x:Name="Top"
+				   Text="{Binding Text}"
+				   Margin="{Binding TopOffset}"
+				   Foreground="{Binding StrokeBrush}"
+				   FontWeight="{Binding FontWeight}"
+			   FontSize="{Binding FontSize}"
+			   LetterSpacing="{Binding LetterSpacing}"
+			   FontFamily="{Binding FontFamily}"  />
+
+		<TextBlock x:Name="TopRight"
+				   Text="{Binding Text}"
+				   Margin="{Binding TopRightOffset}"
+				   Foreground="{Binding StrokeBrush}"
+				   FontWeight="{Binding FontWeight}"
+			   FontSize="{Binding FontSize}"
+			   LetterSpacing="{Binding LetterSpacing}"
+			   FontFamily="{Binding FontFamily}"  />
+
+		<TextBlock x:Name="Left"
+				   Text="{Binding Text}"
+				   Margin="{Binding LeftOffset}"
+				   Foreground="{Binding StrokeBrush}"
+				   FontWeight="{Binding FontWeight}"
+			   FontSize="{Binding FontSize}"
+			   LetterSpacing="{Binding LetterSpacing}"
+			   FontFamily="{Binding FontFamily}"  />
+
+		<TextBlock x:Name="Right"
+				   Text="{Binding Text}"
+				   Margin="{Binding RightOffset}"
+				   Foreground="{Binding StrokeBrush}"
+				   FontWeight="{Binding FontWeight}"
+			   FontSize="{Binding FontSize}"
+			   LetterSpacing="{Binding LetterSpacing}"
+			   FontFamily="{Binding FontFamily}"  />
+
+		<TextBlock x:Name="BottomLeft"
+				   Text="{Binding Text}"
+				   Margin="{Binding BottomLeftOffset}"
+				   Foreground="{Binding StrokeBrush}"
+				   FontWeight="{Binding FontWeight}"
+			   FontSize="{Binding FontSize}"
+			   LetterSpacing="{Binding LetterSpacing}"
+			   FontFamily="{Binding FontFamily}"  />
+
+		<TextBlock x:Name="Bottom"
+				   Text="{Binding Text}"
+				   Margin="{Binding BottomOffset}"
+				   Foreground="{Binding StrokeBrush}"
+				   FontWeight="{Binding FontWeight}"
+			   FontSize="{Binding FontSize}"
+			   LetterSpacing="{Binding LetterSpacing}"
+			   FontFamily="{Binding FontFamily}"  />
+
+		<TextBlock x:Name="BottomRight"
+				   Text="{Binding Text}"
+				   Margin="{Binding BottomRightOffset}"
+				   Foreground="{Binding StrokeBrush}"
+				   FontWeight="{Binding FontWeight}"
+			   FontSize="{Binding FontSize}"
+			   LetterSpacing="{Binding LetterSpacing}"
+			   FontFamily="{Binding FontFamily}"  />
+		<TextBlock x:Name="Center"
+           Text="{Binding Text}"
+           Margin="0"
+           Foreground="{Binding Foreground}"
+           FontWeight="{Binding FontWeight}"
+	   FontSize="{Binding FontSize}"
+			   LetterSpacing="{Binding LetterSpacing}"
+			   FontFamily="{Binding FontFamily}"  />
+	</Grid>
+</UserControl>

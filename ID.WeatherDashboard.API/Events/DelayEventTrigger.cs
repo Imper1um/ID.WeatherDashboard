@@ -9,6 +9,16 @@ namespace ID.WeatherDashboard.API.Events
 {
     public class DelayEventTrigger : EventTrigger
     {
+        public DelayEventTrigger() { }
+        public DelayEventTrigger(DateTimeOffset triggerOn)
+        {
+            TriggerOn = triggerOn;
+        }
+        public DelayEventTrigger(TimeSpan triggerIn)
+        {
+            TriggerOn = DateTimeOffset.Now.Add(triggerIn);
+        }
+
         public DateTimeOffset TriggerOn { get; set; }
 
         public override bool IsTimeToTrigger => DateTimeOffset.Now < TriggerOn;

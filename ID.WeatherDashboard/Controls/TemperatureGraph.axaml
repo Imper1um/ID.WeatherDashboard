@@ -1,0 +1,14 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             x:Class="ID.WeatherDashboard.Controls.TemperatureGraph"
+             xmlns:vm="clr-namespace:ID.WeatherDashboard.API.ViewModels;assembly=ID.WeatherDashboard.API"
+			 xmlns:local="clr-namespace:ID.WeatherDashboard.Controls"
+			 d:DesignWidth="400" d:DesignHeight="100">
+	<UserControl.DataContext>
+		<vm:TemperatureGraphViewModel />
+	</UserControl.DataContext>
+
+	<!--
+	<TextBlock Text="{Binding DebugText, RelativeSource={RelativeSource AncestorType=local:TemperatureGraph}}" Foreground="Red" />-->
+</UserControl>

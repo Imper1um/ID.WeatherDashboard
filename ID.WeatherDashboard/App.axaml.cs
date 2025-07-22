@@ -1,15 +1,23 @@
 ﻿using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core.Plugins;
+using Avalonia.Logging;
 using Avalonia.Markup.Xaml;
 using ID.WeatherDashboard.API.Config;
+using ID.WeatherDashboard.API.Data;
+using ID.WeatherDashboard.API.Elements;
+using ID.WeatherDashboard.API.Elements.Background;
 using ID.WeatherDashboard.API.Services;
+using ID.WeatherDashboard.API.ViewModels;
 using ID.WeatherDashboard.Views;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Serilog;
 using System;
 using System.Reflection;
+using System.Threading.Tasks;
+using Location = ID.WeatherDashboard.API.Data.Location;
 
 namespace ID.WeatherDashboard;
 
@@ -20,7 +28,7 @@ public partial class App : Application
         AvaloniaXamlLoader.Load(this);
     }
 
-    public override void OnFrameworkInitializationCompleted()
+    private ServiceCollection ConfigureServices()
     {
         var services = new ServiceCollection();
 
@@ -38,6 +46,13 @@ public partial class App : Application
         services.AddSingleton<IEncoderService, EncoderService>();
         services.AddSingleton<IEventControllerService, EventControllerService>();
 
+        return services;
+
+        
+    }
+
+    private void InitializeQueryServices(IServiceCollection services)
+    {
         var provider = services.BuildServiceProvider();
         var configManager = provider.GetRequiredService<IConfigManager>();
         var eventControllerService = provider.GetRequiredService<IEventControllerService>();
@@ -69,23 +84,75 @@ public partial class App : Application
             if (instance is IAlertQueryService alertQueryService)
                 services.AddSingleton(typeof(IAlertQueryService), alertQueryService);
         }
+    }
 
-        // Line below is needed to remove Avalonia data validation.
-        // Without this line you will get duplicate validations from both Avalonia and CT
-        BindingPlugins.DataValidators.RemoveAt(0);
+    private void InitializeElements(IServiceCollection services)
+    {
+        services.AddSingleton<IElementService, BackgroundElement>();
+    }
+
+    private DashboardViewModel InitializeViewModel(IServiceCollection services)
+    {
+        var provider = services.BuildServiceProvider();
+        var configManager = provider.GetRequiredService<IConfigManager>();
+
+        var location = configManager.Config.Location;
+        Location l = new Location(location);
+        if (location.Contains(','))
+        {
+            var parts = location.Split(",");
+            if (parts.Length == 2 && double.TryParse(parts[0], out var latitude) && double.TryParse(parts[1], out var longitude))
+                l = new Location(latitude, longitude);
+        }
+        var viewModel = new DashboardViewModel() { Location = l };
+
+        var elements = provider.GetServices<IElementService>();
+        foreach (var e in elements)
+        {
+            Task.Run(() => e.StartAsync(viewModel));
+        }
+
+        return viewModel;
+    }
+
+    public override void OnFrameworkInitializationCompleted()
+    {
+        DashboardViewModel viewModel = new DashboardViewModel()
+        {
+            Location = new Location("OnFrameworkInitializationCompleted") { Latitude = 28.538336, Longitude = -81.379234 },
+            BackgroundSelection = new BackgroundSelection()
+            {
+                Path = "file:///D:/Projects/ID.WeatherScreen/assets/backgrounds/Cloudy001.jpg",
+                WeatherData = new ImageWeatherData() { Description = "Nothing" }
+            },
+            Date = DateTime.Now
+        };
+
+        if (!Design.IsDesignMode)
+        {
+            var services = ConfigureServices();
+            InitializeQueryServices(services);
+            InitializeElements(services);
+            viewModel = InitializeViewModel(services);
+
+            // Line below is needed to remove Avalonia data validation.
+            // Without this line you will get duplicate validations from both Avalonia and CT
+            BindingPlugins.DataValidators.RemoveAt(0);
+        }
+
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             desktop.MainWindow = new MainWindow
             {
-                //DataContext = new MainViewModel()
+                DataContext = viewModel
             };
         }
         else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewPlatform)
         {
             singleViewPlatform.MainView = new MainView
             {
-                //DataContext = new MainViewModel()
+                DataContext = viewModel
             };
         }
 

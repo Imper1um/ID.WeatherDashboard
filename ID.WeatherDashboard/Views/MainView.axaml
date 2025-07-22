@@ -2,15 +2,52 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:vm="clr-namespace:ID.WeatherDashboard.ViewModels"
+             xmlns:vm="clr-namespace:ID.WeatherDashboard.API.ViewModels;assembly=ID.WeatherDashboard.API"
+			 xmlns:Controls="clr-namespace:ID.WeatherDashboard.Controls"
+			 xmlns:Effects="clr-namespace:Avalonia.Media.Effects;assembly=Avalonia.Base"
              mc:Ignorable="d" d:DesignWidth="1920" d:DesignHeight="1080"
              x:Class="ID.WeatherDashboard.Views.MainView"
-             x:DataType="vm:MainViewModel">
+             x:DataType="vm:DashboardViewModel">
   <Design.DataContext>
     <!-- This only sets the DataContext for the previewer in an IDE,
          to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
-    <vm:MainViewModel />
+    <vm:DashboardViewModel />
   </Design.DataContext>
 
-  <TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+	<Grid>
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="20" />
+			<ColumnDefinition Width="4*" />
+			<ColumnDefinition Width="5*" />
+			<ColumnDefinition Width="3*" />
+			<ColumnDefinition Width="*" />
+			<ColumnDefinition Width="2*" />
+			<ColumnDefinition Width="*" />
+			<ColumnDefinition Width="10" />
+		</Grid.ColumnDefinitions>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="10" />
+			<RowDefinition Height="65" />
+			<RowDefinition Height="65" />
+			<RowDefinition Height="*" />
+			<RowDefinition Height="*" />
+			<RowDefinition Height="4*" />
+			<RowDefinition Height="2*" />
+			<RowDefinition Height="10" />
+		</Grid.RowDefinitions>
+		<Grid.Background>
+			<ImageBrush Stretch="UniformToFill" Source="{Binding BackgroundSelection.Path}" />
+		</Grid.Background>
+		
+		<Rectangle Grid.Column="1" Grid.Row="1" Fill="White" Grid.RowSpan="6" Grid.ColumnSpan="6" />
+		<Controls:OutlinedTextBlock Grid.Column="1" Grid.Row="1" FontSize="50" FontWeight="Bold" FontFamily="Verdana" Foreground="White" Text="{Binding DayOfWeek}" LetterSpacing="-1" StrokeThickness="2" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,10,0" />
+		<Controls:OutlinedTextBlock Grid.Column="1" Grid.Row="2" FontSize="50" FontWeight="Bold" FontFamily="Verdana" Foreground="White" Text="{Binding DateString}" LetterSpacing="-2" StrokeThickness="2" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,0,10,0" />
+		<Controls:OutlinedTextBlock Grid.Column="2" Grid.Row="1" Grid.RowSpan="2" FontSize="100" FontWeight="Bold" FontFamily="Verdana" Foreground="White" Text="{Binding TimeString}"  StrokeThickness="2" />
+		<Controls:TemperatureGraph Grid.Column="3" Grid.Row="1" Grid.RowSpan="2" DataContext="{Binding TemperatureGraph}" />
+		<Controls:OutlinedTextBlock Text="{Binding TemperatureGraph.MaxTemperature, StringFormat='{}{0:F1}°'}" Grid.Column="4" Grid.Row="1" Foreground="Red" FontSize="40" HorizontalAlignment="Center" VerticalAlignment="Top" />
+		<Controls:OutlinedTextBlock Text="{Binding TemperatureGraph.MinTemperature, StringFormat='{}{0:F1}°'}" Grid.Column="4" Grid.Row="2" Foreground="Blue" FontSize="40" HorizontalAlignment="Center" VerticalAlignment="Bottom" />
+		<Controls:OutlinedTextBlock Text="{Binding TemperatureGraph.CurrentTemperature, StringFormat='{}{0:F1}°'}" Grid.Column="5" Grid.Row="1" Grid.RowSpan="2" Foreground="White" FontSize="78" HorizontalAlignment="Center" VerticalAlignment="Center" StrokeThickness="2" />
+		<Controls:OutlinedTextBlock Text="{Binding WeatherEmoji}" FontFamily="Segoe UI Emoji" Grid.Column="6" Grid.Row="1" Grid.RowSpan="2" Foreground="White" FontSize="74" HorizontalAlignment="Center" VerticalAlignment="Center" StrokeThickness="1" />
+		<Image Source="{Binding WeatherIcon}" Grid.Column="6" Grid.Row="1" Grid.RowSpan="2" HorizontalAlignment="Center" VerticalAlignment="Center" />
+	</Grid>
 </UserControl>
